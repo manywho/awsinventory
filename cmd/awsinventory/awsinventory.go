@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/iam"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -98,11 +99,20 @@ func main() {
 
 		// Create new services for current region
 		ec2Svc := ec2.New(awsSess, &aws.Config{Region: aws.String(r)})
+		elbSvc := elb.New(awsSess, &aws.Config{Region: aws.String(r)})
 
 		// Concurrently load instance data
 		wg.Add(1)
 		go func(region string) {
 			data.LoadEC2Instances(ec2Svc, region)
+			logrus.Infof("loaded data for %s", region)
+			wg.Done()
+		}(r)
+
+		// Concurrently load elb data
+		wg.Add(1)
+		go func(region string) {
+			data.LoadELBs(elbSvc, region)
 			logrus.Infof("loaded data for %s", region)
 			wg.Done()
 		}(r)
