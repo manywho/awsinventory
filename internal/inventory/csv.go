@@ -9,6 +9,7 @@ var csvHeaders = []string{
 	"Asset Identifier",
 	"Asset Type",
 	"Location",
+	"Creation Date",
 	"Application",
 	"Hardware",
 	"Baseline",

@@ -1,10 +1,13 @@
 package inventory
 
+import "time"
+
 // Row represents a row in the report
 type Row struct {
 	ID            string
 	AssetType     string
 	Location      string
+	CreationDate  time.Time
 	Application   string
 	Hardware      string
 	Baseline      string
@@ -22,6 +25,7 @@ func (r Row) StringSlice() []string {
 	record = append(record, r.ID)
 	record = append(record, r.AssetType)
 	record = append(record, r.Location)
+	record = append(record, r.CreationDate.String())
 	record = append(record, r.Application)
 	record = append(record, r.Hardware)
 	record = append(record, r.Baseline)

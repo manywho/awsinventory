@@ -2,6 +2,7 @@ package inventory
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -10,6 +11,7 @@ var testRow = Row{
 	ID:            "ID",
 	AssetType:     "AssetType",
 	Location:      "Location",
+	CreationDate:  time.Now(),
 	Application:   "Application",
 	Hardware:      "Hardware",
 	Baseline:      "Baseline",
@@ -27,6 +29,7 @@ func TestRowCanReturnSliceOfStrings(t *testing.T) {
 		testRow.ID,
 		testRow.AssetType,
 		testRow.Location,
+		testRow.CreationDate.String(),
 		testRow.Application,
 		testRow.Hardware,
 		testRow.Baseline,
