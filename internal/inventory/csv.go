@@ -42,21 +42,7 @@ func (c CSV) writeHeaders() error {
 
 // WriteRow writes the row to the csv writer
 func (c CSV) WriteRow(r Row) error {
-	var record []string
-
-	record = append(record, r.ID)
-	record = append(record, r.AssetType)
-	record = append(record, r.Location)
-	record = append(record, r.Application)
-	record = append(record, r.Hardware)
-	record = append(record, r.Baseline)
-	record = append(record, r.OSNameVersion)
-	record = append(record, r.InternalIP)
-	record = append(record, r.ExternalIP)
-	record = append(record, r.VPCID)
-	record = append(record, r.DNSName)
-
-	return c.writer.Write(record)
+	return c.writer.Write(r.StringSlice())
 }
 
 // Flush flushes the buffer to the writer
