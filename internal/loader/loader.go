@@ -34,7 +34,7 @@ func (l *Loader) LoadEC2Instances(region string) {
 		Region: aws.String(region),
 	})
 
-	out, err := ec2Svc.DescribeInstances(&ec2.DescribeInstancesInput{MaxResults: aws.Int64(10)})
+	out, err := ec2Svc.DescribeInstances(&ec2.DescribeInstancesInput{})
 	if err != nil {
 		l.Errors <- err
 		return
@@ -69,10 +69,14 @@ func (l *Loader) LoadEC2Instances(region string) {
 		}
 	}
 
+	l.appendData(results)
+}
+
+func (l *Loader) appendData(data []inventory.Row) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 
-	for _, row := range results {
+	for _, row := range data {
 		l.Data = append(l.Data, row)
 	}
 }
