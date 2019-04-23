@@ -4,18 +4,19 @@ import "time"
 
 // Row represents a row in the report
 type Row struct {
-	ID            string
-	AssetType     string
-	Location      string
-	CreationDate  time.Time
-	Application   string
-	Hardware      string
-	Baseline      string
-	OSNameVersion string
-	InternalIP    string
-	ExternalIP    string
-	VPCID         string
-	DNSName       string
+	ID               string
+	AssetType        string
+	Location         string
+	CreationDate     time.Time
+	Application      string
+	Hardware         string
+	Baseline         string
+	OSNameVersion    string
+	InternalIP       string
+	ExternalIP       string
+	VPCID            string
+	DNSName          string
+	PasswordLastUsed time.Time
 }
 
 // StringSlice returns a slice of strings representing the fields on the Row
@@ -34,6 +35,7 @@ func (r Row) StringSlice() []string {
 	record = append(record, r.ExternalIP)
 	record = append(record, r.VPCID)
 	record = append(record, r.DNSName)
+	record = append(record, r.PasswordLastUsed.String())
 
 	return record
 }

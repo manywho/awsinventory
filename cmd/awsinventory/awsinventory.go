@@ -5,6 +5,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/aws/aws-sdk-go/service/iam"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -72,13 +74,21 @@ func main() {
 
 	// Create global services
 	s3Svc := s3.New(awsSess, &aws.Config{Region: aws.String(regions[0])})
-	// iamSvc := s3.New(awsSess)
+	iamSvc := iam.New(awsSess, &aws.Config{Region: aws.String(regions[0])})
 
 	// Concurrently load S3 bucket data
 	logrus.Info("loading s3 data")
 	wg.Add(1)
 	go func() {
 		data.LoadS3Buckets(s3Svc)
+		wg.Done()
+	}()
+
+	// Concurrently load S3 bucket data
+	logrus.Info("loading s3 data")
+	wg.Add(1)
+	go func() {
+		data.LoadIAMUsers(iamSvc)
 		wg.Done()
 	}()
 

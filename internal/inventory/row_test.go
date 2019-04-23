@@ -8,18 +8,19 @@ import (
 )
 
 var testRow = Row{
-	ID:            "ID",
-	AssetType:     "AssetType",
-	Location:      "Location",
-	CreationDate:  time.Now(),
-	Application:   "Application",
-	Hardware:      "Hardware",
-	Baseline:      "Baseline",
-	OSNameVersion: "OSNameVersion",
-	InternalIP:    "InternalIP",
-	ExternalIP:    "ExternalIP",
-	VPCID:         "VPCID",
-	DNSName:       "DNSName",
+	ID:               "ID",
+	AssetType:        "AssetType",
+	Location:         "Location",
+	CreationDate:     time.Now(),
+	Application:      "Application",
+	Hardware:         "Hardware",
+	Baseline:         "Baseline",
+	OSNameVersion:    "OSNameVersion",
+	InternalIP:       "InternalIP",
+	ExternalIP:       "ExternalIP",
+	VPCID:            "VPCID",
+	DNSName:          "DNSName",
+	PasswordLastUsed: time.Now(),
 }
 
 func TestRowCanReturnSliceOfStrings(t *testing.T) {
@@ -38,6 +39,7 @@ func TestRowCanReturnSliceOfStrings(t *testing.T) {
 		testRow.ExternalIP,
 		testRow.VPCID,
 		testRow.DNSName,
+		testRow.PasswordLastUsed.String(),
 	}
 
 	require.Equal(t, expected, actual)
