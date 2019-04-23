@@ -7,7 +7,7 @@ import (
 	"github.com/itmecho/awsinventory/internal/inventory"
 )
 
-// LoadS3Buckets loads the s3 bucket data from the given region into the Loader's data
+// LoadS3Buckets loads the s3 bucket data into the Loader's data
 func (l *Loader) LoadS3Buckets(s3Svc s3iface.S3API) {
 	out, err := s3Svc.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {
