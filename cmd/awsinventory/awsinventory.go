@@ -128,7 +128,7 @@ func main() {
 
 	// Create or open the output file
 	logrus.Infof("creating/opening output file: %s", outputFile)
-	f, err := os.OpenFile(outputFile, os.O_WRONLY|os.O_CREATE, 0644)
+	f, err := os.OpenFile(outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		logrus.Fatal(err)
 	}
