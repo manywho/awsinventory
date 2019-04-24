@@ -98,6 +98,6 @@ func TestLoadIAMUsersSendsErrorToChan(t *testing.T) {
 	case e := <-l.Errors:
 		require.Equal(t, testError, e, "didn't get expected error")
 	default:
-		t.Fatal("should have recieved an error")
+		t.Fatal("should have received an error")
 	}
 }
