@@ -10,3 +10,6 @@ The provided `Makefile` has a build task to handle building the binary. Just run
 ```
 make build
 ```
+
+## Testing
+The `Makefile` has 2 targets for testing, `test` and `coverage`, the latter being the default target. The `test` target is meant to be used when developing and you don't want to be slowed down by the coverage generator.
