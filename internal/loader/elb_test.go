@@ -15,7 +15,7 @@ import (
 )
 
 var testELBRows = []inventory.Row{
-	inventory.Row{
+	{
 		ID:           "abcdefgh12345678",
 		AssetType:    "ELB",
 		Location:     "test-region",
@@ -24,7 +24,7 @@ var testELBRows = []inventory.Row{
 		DNSName:      "abcdefgh12345678.test-region.elb.amazonaws.com",
 		VPCID:        "vpc-abcdefgh",
 	},
-	inventory.Row{
+	{
 		ID:           "12345678abcdefgh",
 		AssetType:    "ELB",
 		Location:     "test-region",
@@ -33,7 +33,7 @@ var testELBRows = []inventory.Row{
 		DNSName:      "12345678abcdefgh.test-region.elb.amazonaws.com",
 		VPCID:        "vpc-12345678",
 	},
-	inventory.Row{
+	{
 		ID:           "a1b2c3d4e5f6g7h8",
 		AssetType:    "ELB",
 		Location:     "test-region",

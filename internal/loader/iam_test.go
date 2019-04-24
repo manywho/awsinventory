@@ -15,7 +15,7 @@ import (
 )
 
 var testIAMRows = []inventory.Row{
-	inventory.Row{
+	{
 		ID:               "ABCDEFGH",
 		AssetType:        "IAM User",
 		Location:         "global",
@@ -23,7 +23,7 @@ var testIAMRows = []inventory.Row{
 		CreationDate:     time.Now().AddDate(0, 0, -10),
 		PasswordLastUsed: time.Now().AddDate(0, 0, -1),
 	},
-	inventory.Row{
+	{
 		ID:               "12345678",
 		AssetType:        "IAM User",
 		Location:         "global",
@@ -31,7 +31,7 @@ var testIAMRows = []inventory.Row{
 		CreationDate:     time.Now().AddDate(0, 0, -20),
 		PasswordLastUsed: time.Now().AddDate(0, 0, -2),
 	},
-	inventory.Row{
+	{
 		ID:               "A1B2C3D4E",
 		AssetType:        "IAM User",
 		Location:         "global",

@@ -16,19 +16,19 @@ import (
 )
 
 var testS3Rows = []inventory.Row{
-	inventory.Row{
+	{
 		ID:           "test-bucket-1",
 		AssetType:    "S3 Bucket",
 		Location:     "global",
 		CreationDate: time.Now().AddDate(0, 0, -1),
 	},
-	inventory.Row{
+	{
 		ID:           "test-bucket-2",
 		AssetType:    "S3 Bucket",
 		Location:     "global",
 		CreationDate: time.Now().AddDate(0, 0, -2),
 	},
-	inventory.Row{
+	{
 		ID:           "test-bucket-3",
 		AssetType:    "S3 Bucket",
 		Location:     "global",
