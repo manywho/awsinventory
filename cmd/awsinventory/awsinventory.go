@@ -70,18 +70,11 @@ func main() {
 		}
 	}()
 
-	// Create a new aws session
-	awsSess := session.Must(session.NewSession())
-
-	// Create global services
-	s3Svc := s3.New(awsSess, &aws.Config{Region: aws.String(regions[0])})
-	iamSvc := iam.New(awsSess, &aws.Config{Region: aws.String(regions[0])})
-
 	// Concurrently load S3 bucket data
 	logrus.Info("loading s3 data")
 	wg.Add(1)
 	go func() {
-		data.LoadS3Buckets(s3Svc)
+		data.LoadS3Buckets(s3.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(regions[0])}))
 		wg.Done()
 	}()
 
@@ -89,22 +82,18 @@ func main() {
 	logrus.Info("loading iam user data")
 	wg.Add(1)
 	go func() {
-		data.LoadIAMUsers(iamSvc)
+		data.LoadIAMUsers(iam.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(regions[0])}))
 		wg.Done()
 	}()
 
 	// Loop over regions and load data
 	for _, r := range regions {
 
-		// Create new services for current region
-		ec2Svc := ec2.New(awsSess, &aws.Config{Region: aws.String(r)})
-		elbSvc := elb.New(awsSess, &aws.Config{Region: aws.String(r)})
-
 		// Concurrently load instance data
 		wg.Add(1)
 		go func(region string) {
 			logrus.Infof("%s: loading instance data", region)
-			data.LoadEC2Instances(ec2Svc, region)
+			data.LoadEC2Instances(ec2.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(r)}), region)
 			wg.Done()
 		}(r)
 
@@ -112,7 +101,7 @@ func main() {
 		wg.Add(1)
 		go func(region string) {
 			logrus.Infof("%s: loading volume data", region)
-			data.LoadEC2Volumes(ec2Svc, region)
+			data.LoadEC2Volumes(ec2.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(r)}), region)
 			wg.Done()
 		}(r)
 
@@ -120,7 +109,7 @@ func main() {
 		wg.Add(1)
 		go func(region string) {
 			logrus.Infof("%s: loading elb data", region)
-			data.LoadELBs(elbSvc, region)
+			data.LoadELBs(elb.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(r)}), region)
 			wg.Done()
 		}(r)
 	}
