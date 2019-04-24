@@ -85,8 +85,8 @@ func main() {
 		wg.Done()
 	}()
 
-	// Concurrently load S3 bucket data
-	logrus.Info("loading s3 data")
+	// Concurrently load IAM user data
+	logrus.Info("loading iam user data")
 	wg.Add(1)
 	go func() {
 		data.LoadIAMUsers(iamSvc)
