@@ -20,21 +20,21 @@ var testEC2VolumeRows = []inventory.Row{
 		Location:     "test-region-1a",
 		CreationDate: time.Now().AddDate(0, 0, -1),
 		Application:  "test app 1",
-		Hardware:     "gp2",
+		Hardware:     "gp2 (100GB)",
 	},
 	{
 		ID:           "vol-abcdefgh",
 		AssetType:    "EC2 Volume",
 		Location:     "test-region-1b",
 		CreationDate: time.Now().AddDate(0, 0, -1),
-		Hardware:     "gp2",
+		Hardware:     "gp2 (50GB)",
 	},
 	{
 		ID:           "vol-a1b2c3d4",
 		AssetType:    "EC2 Volume",
 		Location:     "test-region-1c",
 		CreationDate: time.Now().AddDate(0, 0, -1),
-		Hardware:     "gp2",
+		Hardware:     "gp2 (20GB)",
 	},
 }
 
@@ -43,9 +43,10 @@ func (e EC2Mock) DescribeVolumes(cfg *ec2.DescribeVolumesInput) (*ec2.DescribeVo
 		Volumes: []*ec2.Volume{
 			{
 				VolumeId:         aws.String(testEC2VolumeRows[0].ID),
-				VolumeType:       aws.String(testEC2VolumeRows[0].Hardware),
+				VolumeType:       aws.String("gp2"),
 				CreateTime:       aws.Time(testEC2VolumeRows[0].CreationDate),
 				AvailabilityZone: aws.String(testEC2VolumeRows[0].Location),
+				Size:             aws.Int64(100),
 				Tags: []*ec2.Tag{
 					{
 						Key:   aws.String("Name"),
@@ -60,16 +61,18 @@ func (e EC2Mock) DescribeVolumes(cfg *ec2.DescribeVolumesInput) (*ec2.DescribeVo
 			{
 
 				VolumeId:         aws.String(testEC2VolumeRows[1].ID),
-				VolumeType:       aws.String(testEC2VolumeRows[1].Hardware),
+				VolumeType:       aws.String("gp2"),
 				CreateTime:       aws.Time(testEC2VolumeRows[1].CreationDate),
 				AvailabilityZone: aws.String(testEC2VolumeRows[1].Location),
+				Size:             aws.Int64(50),
 			},
 			{
 
 				VolumeId:         aws.String(testEC2VolumeRows[2].ID),
-				VolumeType:       aws.String(testEC2VolumeRows[2].Hardware),
+				VolumeType:       aws.String("gp2"),
 				CreateTime:       aws.Time(testEC2VolumeRows[2].CreationDate),
 				AvailabilityZone: aws.String(testEC2VolumeRows[2].Location),
+				Size:             aws.Int64(20),
 			},
 		},
 	}, nil

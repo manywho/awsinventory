@@ -1,6 +1,8 @@
 package loader
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
@@ -31,8 +33,8 @@ func (l *Loader) LoadEC2Volumes(ec2Svc ec2iface.EC2API, region string) {
 			Location:     aws.StringValue(v.AvailabilityZone),
 			CreationDate: aws.TimeValue(v.CreateTime),
 			Application:  name,
-			Hardware:     aws.StringValue(v.VolumeType),
-			// TODO add v.Size, v.Encrypted
+			Hardware:     fmt.Sprintf("%s (%dGB)", aws.StringValue(v.VolumeType), aws.Int64Value(v.Size)),
+			// TODO add v.Encrypted
 		})
 	}
 
