@@ -51,21 +51,21 @@ type ELBMock struct {
 func (e ELBMock) DescribeLoadBalancers(cfg *elb.DescribeLoadBalancersInput) (*elb.DescribeLoadBalancersOutput, error) {
 	return &elb.DescribeLoadBalancersOutput{
 		LoadBalancerDescriptions: []*elb.LoadBalancerDescription{
-			&elb.LoadBalancerDescription{
+			{
 				LoadBalancerName:        aws.String(testELBRows[0].ID),
 				CreatedTime:             aws.Time(testELBRows[0].CreationDate),
 				CanonicalHostedZoneName: aws.String(testELBRows[0].Application),
 				DNSName:                 aws.String(testELBRows[0].DNSName),
 				VPCId:                   aws.String(testELBRows[0].VPCID),
 			},
-			&elb.LoadBalancerDescription{
+			{
 				LoadBalancerName:        aws.String(testELBRows[1].ID),
 				CreatedTime:             aws.Time(testELBRows[1].CreationDate),
 				CanonicalHostedZoneName: aws.String(testELBRows[1].Application),
 				DNSName:                 aws.String(testELBRows[1].DNSName),
 				VPCId:                   aws.String(testELBRows[1].VPCID),
 			},
-			&elb.LoadBalancerDescription{
+			{
 				LoadBalancerName:        aws.String(testELBRows[2].ID),
 				CreatedTime:             aws.Time(testELBRows[2].CreationDate),
 				CanonicalHostedZoneName: aws.String(testELBRows[2].Application),

@@ -43,15 +43,15 @@ type S3Mock struct {
 func (s S3Mock) ListBuckets(cfg *s3.ListBucketsInput) (*s3.ListBucketsOutput, error) {
 	return &s3.ListBucketsOutput{
 		Buckets: []*s3.Bucket{
-			&s3.Bucket{
+			{
 				Name:         aws.String(testS3Rows[0].ID),
 				CreationDate: aws.Time(testS3Rows[0].CreationDate),
 			},
-			&s3.Bucket{
+			{
 				Name:         aws.String(testS3Rows[1].ID),
 				CreationDate: aws.Time(testS3Rows[1].CreationDate),
 			},
-			&s3.Bucket{
+			{
 				Name:         aws.String(testS3Rows[2].ID),
 				CreationDate: aws.Time(testS3Rows[2].CreationDate),
 			},

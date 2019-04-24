@@ -16,7 +16,7 @@ import (
 )
 
 var testEC2Rows = []inventory.Row{
-	inventory.Row{
+	{
 		ID:           "i-12345678",
 		AssetType:    "EC2 Instance",
 		Location:     "test-region",
@@ -28,7 +28,7 @@ var testEC2Rows = []inventory.Row{
 		ExternalIP:   "203.0.113.10",
 		VPCID:        "vpc-12345678",
 	},
-	inventory.Row{
+	{
 		ID:           "i-abcdefgh",
 		AssetType:    "EC2 Instance",
 		Location:     "test-region",
@@ -40,7 +40,7 @@ var testEC2Rows = []inventory.Row{
 		ExternalIP:   "203.0.113.20",
 		VPCID:        "vpc-abcdefgh",
 	},
-	inventory.Row{
+	{
 		ID:           "i-a1b2c3d4",
 		AssetType:    "EC2 Instance",
 		Location:     "test-region",
@@ -61,9 +61,9 @@ type EC2Mock struct {
 func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return &ec2.DescribeInstancesOutput{
 		Reservations: []*ec2.Reservation{
-			&ec2.Reservation{
+			{
 				Instances: []*ec2.Instance{
-					&ec2.Instance{
+					{
 						InstanceId:       aws.String(testEC2Rows[0].ID),
 						InstanceType:     aws.String(testEC2Rows[0].Hardware),
 						ImageId:          aws.String(testEC2Rows[0].Baseline),
@@ -72,17 +72,17 @@ func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.Descri
 						PrivateIpAddress: aws.String(testEC2Rows[0].InternalIP),
 						VpcId:            aws.String(testEC2Rows[0].VPCID),
 						Tags: []*ec2.Tag{
-							&ec2.Tag{
+							{
 								Key:   aws.String("Name"),
 								Value: aws.String(testEC2Rows[0].Application),
 							},
-							&ec2.Tag{
+							{
 								Key:   aws.String("extra tag"),
 								Value: aws.String("testval"),
 							},
 						},
 					},
-					&ec2.Instance{
+					{
 						InstanceId:       aws.String(testEC2Rows[1].ID),
 						InstanceType:     aws.String(testEC2Rows[1].Hardware),
 						ImageId:          aws.String(testEC2Rows[1].Baseline),
@@ -91,11 +91,11 @@ func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.Descri
 						PrivateIpAddress: aws.String(testEC2Rows[1].InternalIP),
 						VpcId:            aws.String(testEC2Rows[1].VPCID),
 						Tags: []*ec2.Tag{
-							&ec2.Tag{
+							{
 								Key:   aws.String("Name"),
 								Value: aws.String(testEC2Rows[1].Application),
 							},
-							&ec2.Tag{
+							{
 								Key:   aws.String("extra tag"),
 								Value: aws.String("testval"),
 							},
@@ -103,9 +103,9 @@ func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.Descri
 					},
 				},
 			},
-			&ec2.Reservation{
+			{
 				Instances: []*ec2.Instance{
-					&ec2.Instance{
+					{
 						InstanceId:       aws.String(testEC2Rows[2].ID),
 						InstanceType:     aws.String(testEC2Rows[2].Hardware),
 						ImageId:          aws.String(testEC2Rows[2].Baseline),
@@ -114,11 +114,11 @@ func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.Descri
 						PrivateIpAddress: aws.String(testEC2Rows[2].InternalIP),
 						VpcId:            aws.String(testEC2Rows[2].VPCID),
 						Tags: []*ec2.Tag{
-							&ec2.Tag{
+							{
 								Key:   aws.String("Name"),
 								Value: aws.String(testEC2Rows[2].Application),
 							},
-							&ec2.Tag{
+							{
 								Key:   aws.String("extra tag"),
 								Value: aws.String("testval"),
 							},

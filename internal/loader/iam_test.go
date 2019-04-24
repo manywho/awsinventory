@@ -48,19 +48,19 @@ type IAMMock struct {
 func (i IAMMock) ListUsers(cfg *iam.ListUsersInput) (*iam.ListUsersOutput, error) {
 	return &iam.ListUsersOutput{
 		Users: []*iam.User{
-			&iam.User{
+			{
 				UserId:           aws.String(testIAMRows[0].ID),
 				UserName:         aws.String(testIAMRows[0].Application),
 				CreateDate:       aws.Time(testIAMRows[0].CreationDate),
 				PasswordLastUsed: aws.Time(testIAMRows[0].PasswordLastUsed),
 			},
-			&iam.User{
+			{
 				UserId:           aws.String(testIAMRows[1].ID),
 				UserName:         aws.String(testIAMRows[1].Application),
 				CreateDate:       aws.Time(testIAMRows[1].CreationDate),
 				PasswordLastUsed: aws.Time(testIAMRows[1].PasswordLastUsed),
 			},
-			&iam.User{
+			{
 				UserId:           aws.String(testIAMRows[2].ID),
 				UserName:         aws.String(testIAMRows[2].Application),
 				CreateDate:       aws.Time(testIAMRows[2].CreationDate),
