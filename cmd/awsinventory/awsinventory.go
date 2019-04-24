@@ -95,7 +95,6 @@ func main() {
 
 	// Loop over regions and load data
 	for _, r := range regions {
-		logrus.Infof("loading data for %s", r)
 
 		// Create new services for current region
 		ec2Svc := ec2.New(awsSess, &aws.Config{Region: aws.String(r)})
@@ -104,16 +103,24 @@ func main() {
 		// Concurrently load instance data
 		wg.Add(1)
 		go func(region string) {
+			logrus.Infof("%s: loading instance data", region)
 			data.LoadEC2Instances(ec2Svc, region)
-			logrus.Infof("loaded data for %s", region)
+			wg.Done()
+		}(r)
+
+		// Concurrently load volume data
+		wg.Add(1)
+		go func(region string) {
+			logrus.Infof("%s: loading volume data", region)
+			data.LoadEC2Volumes(ec2Svc, region)
 			wg.Done()
 		}(r)
 
 		// Concurrently load elb data
 		wg.Add(1)
 		go func(region string) {
+			logrus.Infof("%s: loading elb data", region)
 			data.LoadELBs(elbSvc, region)
-			logrus.Infof("loaded data for %s", region)
 			wg.Done()
 		}(r)
 	}

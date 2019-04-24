@@ -15,7 +15,7 @@ import (
 	. "github.com/itmecho/awsinventory/internal/loader"
 )
 
-var testEC2Rows = []inventory.Row{
+var testEC2InstanceRows = []inventory.Row{
 	{
 		ID:           "i-12345678",
 		AssetType:    "EC2 Instance",
@@ -64,17 +64,17 @@ func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.Descri
 			{
 				Instances: []*ec2.Instance{
 					{
-						InstanceId:       aws.String(testEC2Rows[0].ID),
-						InstanceType:     aws.String(testEC2Rows[0].Hardware),
-						ImageId:          aws.String(testEC2Rows[0].Baseline),
-						LaunchTime:       aws.Time(testEC2Rows[0].CreationDate),
-						PublicIpAddress:  aws.String(testEC2Rows[0].ExternalIP),
-						PrivateIpAddress: aws.String(testEC2Rows[0].InternalIP),
-						VpcId:            aws.String(testEC2Rows[0].VPCID),
+						InstanceId:       aws.String(testEC2InstanceRows[0].ID),
+						InstanceType:     aws.String(testEC2InstanceRows[0].Hardware),
+						ImageId:          aws.String(testEC2InstanceRows[0].Baseline),
+						LaunchTime:       aws.Time(testEC2InstanceRows[0].CreationDate),
+						PublicIpAddress:  aws.String(testEC2InstanceRows[0].ExternalIP),
+						PrivateIpAddress: aws.String(testEC2InstanceRows[0].InternalIP),
+						VpcId:            aws.String(testEC2InstanceRows[0].VPCID),
 						Tags: []*ec2.Tag{
 							{
 								Key:   aws.String("Name"),
-								Value: aws.String(testEC2Rows[0].Application),
+								Value: aws.String(testEC2InstanceRows[0].Application),
 							},
 							{
 								Key:   aws.String("extra tag"),
@@ -83,17 +83,17 @@ func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.Descri
 						},
 					},
 					{
-						InstanceId:       aws.String(testEC2Rows[1].ID),
-						InstanceType:     aws.String(testEC2Rows[1].Hardware),
-						ImageId:          aws.String(testEC2Rows[1].Baseline),
-						LaunchTime:       aws.Time(testEC2Rows[1].CreationDate),
-						PublicIpAddress:  aws.String(testEC2Rows[1].ExternalIP),
-						PrivateIpAddress: aws.String(testEC2Rows[1].InternalIP),
-						VpcId:            aws.String(testEC2Rows[1].VPCID),
+						InstanceId:       aws.String(testEC2InstanceRows[1].ID),
+						InstanceType:     aws.String(testEC2InstanceRows[1].Hardware),
+						ImageId:          aws.String(testEC2InstanceRows[1].Baseline),
+						LaunchTime:       aws.Time(testEC2InstanceRows[1].CreationDate),
+						PublicIpAddress:  aws.String(testEC2InstanceRows[1].ExternalIP),
+						PrivateIpAddress: aws.String(testEC2InstanceRows[1].InternalIP),
+						VpcId:            aws.String(testEC2InstanceRows[1].VPCID),
 						Tags: []*ec2.Tag{
 							{
 								Key:   aws.String("Name"),
-								Value: aws.String(testEC2Rows[1].Application),
+								Value: aws.String(testEC2InstanceRows[1].Application),
 							},
 							{
 								Key:   aws.String("extra tag"),
@@ -106,17 +106,17 @@ func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.Descri
 			{
 				Instances: []*ec2.Instance{
 					{
-						InstanceId:       aws.String(testEC2Rows[2].ID),
-						InstanceType:     aws.String(testEC2Rows[2].Hardware),
-						ImageId:          aws.String(testEC2Rows[2].Baseline),
-						LaunchTime:       aws.Time(testEC2Rows[2].CreationDate),
-						PublicIpAddress:  aws.String(testEC2Rows[2].ExternalIP),
-						PrivateIpAddress: aws.String(testEC2Rows[2].InternalIP),
-						VpcId:            aws.String(testEC2Rows[2].VPCID),
+						InstanceId:       aws.String(testEC2InstanceRows[2].ID),
+						InstanceType:     aws.String(testEC2InstanceRows[2].Hardware),
+						ImageId:          aws.String(testEC2InstanceRows[2].Baseline),
+						LaunchTime:       aws.Time(testEC2InstanceRows[2].CreationDate),
+						PublicIpAddress:  aws.String(testEC2InstanceRows[2].ExternalIP),
+						PrivateIpAddress: aws.String(testEC2InstanceRows[2].InternalIP),
+						VpcId:            aws.String(testEC2InstanceRows[2].VPCID),
 						Tags: []*ec2.Tag{
 							{
 								Key:   aws.String("Name"),
-								Value: aws.String(testEC2Rows[2].Application),
+								Value: aws.String(testEC2InstanceRows[2].Application),
 							},
 							{
 								Key:   aws.String("extra tag"),
@@ -133,10 +133,10 @@ func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.Descri
 func TestCanLoadEC2Instances(t *testing.T) {
 	l := NewLoader()
 
-	l.LoadEC2Instances(EC2Mock{}, testEC2Rows[0].Location)
+	l.LoadEC2Instances(EC2Mock{}, testEC2InstanceRows[0].Location)
 
 	require.Len(t, l.Data, 3, "got more than 3 instances")
-	require.Equal(t, testEC2Rows, l.Data, "didn't get expected data")
+	require.Equal(t, testEC2InstanceRows, l.Data, "didn't get expected data")
 }
 
 var testError = errors.New("test aws error")
@@ -152,7 +152,7 @@ func (e EC2ErrorMock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.D
 func TestLoadEC2InstancesSendsErrorToChan(t *testing.T) {
 	l := NewLoader()
 
-	l.LoadEC2Instances(EC2ErrorMock{}, testEC2Rows[0].Location)
+	l.LoadEC2Instances(EC2ErrorMock{}, testEC2InstanceRows[0].Location)
 
 	require.Len(t, l.Errors, 1, "didn't send error to Errors channel")
 
