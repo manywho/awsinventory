@@ -1,149 +1,54 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
-	"sync"
 
-	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/aws/aws-sdk-go/service/iam"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/itmecho/awsinventory/internal/loader"
-	"github.com/sirupsen/logrus"
+	"github.com/itmecho/awsinventory/internal/data"
 
 	"github.com/itmecho/awsinventory/internal/inventory"
 	"github.com/spf13/pflag"
 )
 
 var (
-	outputFile string
-	regions    []string
-	verbose    bool
-
-	validRegions = []string{
-		"us-east-2",
-		"us-east-1",
-		"us-west-1",
-		"us-west-2",
-		"ap-south-1",
-		"ap-northeast-3",
-		"ap-northeast-2",
-		"ap-southeast-1",
-		"ap-southeast-2",
-		"ap-northeast-1",
-		"ca-central-1",
-		"cn-north-1",
-		"cn-northwest-1",
-		"eu-central-1",
-		"eu-west-1",
-		"eu-west-2",
-		"eu-west-3",
-		"eu-north-1",
-		"sa-east-1",
-	}
+	outputFile        string
+	regions, services []string
+	logLevel          string
 )
 
 func init() {
 	pflag.StringVarP(&outputFile, "output-file", "o", "inventory.csv", "path to the output file")
-	pflag.StringSliceVar(&regions, "regions", validRegions, "regions to gather data from")
-	pflag.BoolVarP(&verbose, "verbose", "v", false, "show verbose logging")
+	pflag.StringSliceVarP(&regions, "regions", "r", data.ValidRegions, "regions to gather data from")
+	pflag.StringSliceVarP(&services, "services", "s", data.ValidServices, "services to gather data from")
+	pflag.StringVarP(&logLevel, "log-level", "l", "warning", "set the level of log output")
 	pflag.Parse()
 
-	if !verbose {
-		logrus.SetOutput(ioutil.Discard)
-	}
+	initLogger()
 }
 
 func main() {
+	awsData := data.New(logger, nil)
+	awsData.Load(regions, services)
 
-	data := loader.NewLoader()
-	wg := sync.WaitGroup{}
-
-	// Start watching for errors
-	go func() {
-		for e := range data.Errors {
-			logrus.Error(e)
-		}
-	}()
-
-	// Concurrently load S3 bucket data
-	logrus.Info("loading s3 data")
-	wg.Add(1)
-	go func() {
-		data.LoadS3Buckets(s3.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(regions[0])}))
-		wg.Done()
-	}()
-
-	// Concurrently load IAM user data
-	logrus.Info("loading iam user data")
-	wg.Add(1)
-	go func() {
-		data.LoadIAMUsers(iam.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(regions[0])}))
-		wg.Done()
-	}()
-
-	// Loop over regions and load data
-	for _, r := range regions {
-
-		// Concurrently load instance data
-		wg.Add(1)
-		go func(region string) {
-			logrus.Infof("%s: loading instance data", region)
-			data.LoadEC2Instances(ec2.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(r)}), region)
-			wg.Done()
-		}(r)
-
-		// Concurrently load volume data
-		wg.Add(1)
-		go func(region string) {
-			logrus.Infof("%s: loading volume data", region)
-			data.LoadEC2Volumes(ec2.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(r)}), region)
-			wg.Done()
-		}(r)
-
-		// Concurrently load elb data
-		wg.Add(1)
-		go func(region string) {
-			logrus.Infof("%s: loading elb data", region)
-			data.LoadELBs(elb.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(r)}), region)
-			wg.Done()
-		}(r)
-	}
-
-	// Wait for data to finish loading
-	wg.Wait()
-
-	// Close errors channel
-	close(data.Errors)
-
-	logrus.Info("finished loading data")
-
-	// Create or open the output file
-	logrus.Infof("creating/opening output file: %s", outputFile)
 	f, err := os.OpenFile(outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		logrus.Fatal(err)
+		logger.Fatal(err)
 	}
 	defer f.Close()
 
 	// Create new csv inventory
 	csv, err := inventory.NewCSV(f)
 	if err != nil {
-		logrus.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	// Write stored rows to csv inventory
-	for _, r := range data.Data {
-		if err := csv.WriteRow(r); err != nil {
-			logrus.Error(err)
-		}
-	}
+	var count int
+	awsData.MapRows(func(row inventory.Row) error {
+		count++
+		return csv.WriteRow(row)
+	})
 
 	// Write file to disk
-	logrus.Infof("writing %s", outputFile)
+	logger.Infof("writing %d rows to %s", count, outputFile)
 	csv.Flush()
 }
