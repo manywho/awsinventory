@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	// AssetTypeEBSVolume is the value used in the AssetType field when fetching ELB volumes
+	// AssetTypeEBSVolume is the value used in the AssetType field when fetching EBS volumes
 	AssetTypeEBSVolume string = "EBS Volume"
 
-	// ServiceEBS is the keyfor the EBS service
+	// ServiceEBS is the key for the EBS service
 	ServiceEBS string = "ebs"
 )
 

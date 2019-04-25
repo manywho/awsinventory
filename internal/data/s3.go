@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	// AssetTypeS3Bucket is the value used in the AssetType field when fetching S3 Bucket
+	// AssetTypeS3Bucket is the value used in the AssetType field when fetching S3 Buckets
 	AssetTypeS3Bucket string = "S3 Bucket"
 
-	// ServiceS3 is the keyfor the EC2 service
+	// ServiceS3 is the key for the S3 service
 	ServiceS3 string = "s3"
 )
 

@@ -12,7 +12,7 @@ const (
 	// AssetTypeEC2Instance is the value used in the AssetType field when fetching EC2 instances
 	AssetTypeEC2Instance string = "EC2 Instance"
 
-	// ServiceEC2 is the keyfor the EC2 service
+	// ServiceEC2 is the key for the EC2 service
 	ServiceEC2 string = "ec2"
 )
 

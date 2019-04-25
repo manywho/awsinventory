@@ -12,7 +12,7 @@ const (
 	// AssetTypeIAMUser is the value used in the AssetType field when fetching IAM users
 	AssetTypeIAMUser string = "IAM User"
 
-	// ServiceIAM is the keyfor the IAM service
+	// ServiceIAM is the key for the IAM service
 	ServiceIAM string = "iam"
 )
 

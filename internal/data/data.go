@@ -63,6 +63,7 @@ func New(logger *logrus.Logger, clients Clients) *Data {
 	if clients == nil {
 		clients = DefaultClients{}
 	}
+
 	return &Data{
 		clients: clients,
 		rows:    make([]inventory.Row, 0),
@@ -73,7 +74,7 @@ func New(logger *logrus.Logger, clients Clients) *Data {
 	}
 }
 
-// Load concurrently loads the required data as specified during creation
+// Load concurrently loads the required data based of the of regions and services provided
 func (d *Data) Load(regions, services []string) {
 	if len(services) == 0 {
 		d.log.Error(ErrNoServices)

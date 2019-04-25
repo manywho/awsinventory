@@ -12,7 +12,7 @@ const (
 	// AssetTypeELB is the value used in the AssetType field when fetching ELBs
 	AssetTypeELB string = "ELB"
 
-	// ServiceELB is the key for the S3 service
+	// ServiceELB is the key for the ELB service
 	ServiceELB string = "elb"
 )
 
