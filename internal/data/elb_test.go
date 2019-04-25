@@ -20,28 +20,28 @@ var testELBRows = []inventory.Row{
 	{
 		ID:           "abcdefgh12345678",
 		AssetType:    "ELB",
-		Location:     "test-region",
+		Location:     ValidRegions[0],
 		CreationDate: time.Now().AddDate(0, 0, -1),
 		Application:  "mydomain.com",
-		DNSName:      "abcdefgh12345678.test-region.elb.amazonaws.com",
+		DNSName:      "abcdefgh12345678.ValidRegions[0].elb.amazonaws.com",
 		VPCID:        "vpc-abcdefgh",
 	},
 	{
 		ID:           "12345678abcdefgh",
 		AssetType:    "ELB",
-		Location:     "test-region",
+		Location:     ValidRegions[0],
 		CreationDate: time.Now().AddDate(0, 0, -2),
 		Application:  "another.com",
-		DNSName:      "12345678abcdefgh.test-region.elb.amazonaws.com",
+		DNSName:      "12345678abcdefgh.ValidRegions[0].elb.amazonaws.com",
 		VPCID:        "vpc-12345678",
 	},
 	{
 		ID:           "a1b2c3d4e5f6g7h8",
 		AssetType:    "ELB",
-		Location:     "test-region",
+		Location:     ValidRegions[0],
 		CreationDate: time.Now().AddDate(0, 0, -1),
 		Application:  "yetanother.com",
-		DNSName:      "a1b2c3d4e5f6g7h8.test-region.elb.amazonaws.com",
+		DNSName:      "a1b2c3d4e5f6g7h8.ValidRegions[0].elb.amazonaws.com",
 		VPCID:        "vpc-a1b2c3d4",
 	},
 }
@@ -94,7 +94,7 @@ func (e ELBErrorMock) DescribeLoadBalancers(cfg *elb.DescribeLoadBalancersInput)
 func TestCanLoadELBs(t *testing.T) {
 	d := New(logrus.New(), TestClients{ELB: ELBMock{}})
 
-	d.Load([]string{"test-region"}, []string{ServiceELB})
+	d.Load([]string{ValidRegions[0]}, []string{ServiceELB})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
@@ -114,7 +114,7 @@ func TestLoadELBsLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{ELB: ELBErrorMock{}})
 
-	d.Load([]string{"test-region"}, []string{ServiceELB})
+	d.Load([]string{ValidRegions[0]}, []string{ServiceELB})
 
 	buf.Flush()
 	require.Contains(t, output.String(), testError.Error())

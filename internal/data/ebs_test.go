@@ -20,7 +20,7 @@ var testEBSVolumeRows = []inventory.Row{
 	{
 		ID:           "vol-12345678",
 		AssetType:    AssetTypeEBSVolume,
-		Location:     "test-region-1a",
+		Location:     "ValidRegions[0]-1a",
 		CreationDate: time.Now().AddDate(0, 0, -1),
 		Application:  "test app 1",
 		Hardware:     "gp2 (100GB)",
@@ -28,14 +28,14 @@ var testEBSVolumeRows = []inventory.Row{
 	{
 		ID:           "vol-abcdefgh",
 		AssetType:    AssetTypeEBSVolume,
-		Location:     "test-region-1b",
+		Location:     "ValidRegions[0]-1b",
 		CreationDate: time.Now().AddDate(0, 0, -1),
 		Hardware:     "gp2 (50GB)",
 	},
 	{
 		ID:           "vol-a1b2c3d4",
 		AssetType:    AssetTypeEBSVolume,
-		Location:     "test-region-1c",
+		Location:     "ValidRegions[0]-1c",
 		CreationDate: time.Now().AddDate(0, 0, -1),
 		Hardware:     "gp2 (20GB)",
 	},
@@ -101,7 +101,7 @@ func (e EBSErrorMock) DescribeVolumes(cfg *ec2.DescribeVolumesInput) (*ec2.Descr
 func TestCanLoadEBSVolumes(t *testing.T) {
 	d := New(logrus.New(), TestClients{EC2: EBSMock{}})
 
-	d.Load([]string{"test-region"}, []string{ServiceEBS})
+	d.Load([]string{ValidRegions[0]}, []string{ServiceEBS})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
@@ -121,7 +121,7 @@ func TestLoadEBSVolumesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{EC2: EBSErrorMock{}})
 
-	d.Load([]string{"test-region"}, []string{ServiceEBS})
+	d.Load([]string{ValidRegions[0]}, []string{ServiceEBS})
 
 	buf.Flush()
 	require.Contains(t, output.String(), testError.Error())

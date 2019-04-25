@@ -20,7 +20,7 @@ var testEC2InstanceRows = []inventory.Row{
 	{
 		ID:           "i-12345678",
 		AssetType:    "EC2 Instance",
-		Location:     "test-region",
+		Location:     ValidRegions[0],
 		CreationDate: time.Now().AddDate(0, 0, -1),
 		Application:  "test app 1",
 		Hardware:     "m4.large",
@@ -32,7 +32,7 @@ var testEC2InstanceRows = []inventory.Row{
 	{
 		ID:           "i-abcdefgh",
 		AssetType:    "EC2 Instance",
-		Location:     "test-region",
+		Location:     ValidRegions[0],
 		CreationDate: time.Now().AddDate(0, 0, -2),
 		Application:  "test app 2",
 		Hardware:     "t2.medium",
@@ -44,7 +44,7 @@ var testEC2InstanceRows = []inventory.Row{
 	{
 		ID:           "i-a1b2c3d4",
 		AssetType:    "EC2 Instance",
-		Location:     "test-region",
+		Location:     ValidRegions[0],
 		CreationDate: time.Now().AddDate(0, 0, -3),
 		Application:  "test app 3",
 		Hardware:     "r4.medium",
@@ -147,7 +147,7 @@ func (e EC2ErrorMock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.D
 func TestCanLoadEC2Instances(t *testing.T) {
 	d := New(logrus.New(), TestClients{EC2: EC2Mock{}})
 
-	d.Load([]string{"test-region"}, []string{"ec2"})
+	d.Load([]string{ValidRegions[0]}, []string{"ec2"})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
@@ -167,7 +167,7 @@ func TestLoadEC2InstancesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{EC2: EC2ErrorMock{}})
 
-	d.Load([]string{"test-region"}, []string{"ec2"})
+	d.Load([]string{ValidRegions[0]}, []string{"ec2"})
 
 	buf.Flush()
 	require.Contains(t, output.String(), testError.Error())

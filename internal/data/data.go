@@ -1,7 +1,6 @@
 package data
 
 import (
-	"errors"
 	"sync"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 )
 
 var (
+	// ValidRegions contains a list of valid AWS regions to gather data from
 	ValidRegions = []string{
 		"us-east-2",
 		"us-east-1",
@@ -32,6 +32,7 @@ var (
 		"sa-east-1",
 	}
 
+	// ValidServices contains a list of valid AWS services to gather data from
 	ValidServices = []string{
 		ServiceEBS,
 		ServiceEC2,
@@ -39,12 +40,6 @@ var (
 		ServiceIAM,
 		ServiceS3,
 	}
-
-	// ErrNoRegions is logged when no regions are given to the Load method
-	ErrNoRegions = errors.New("no regions specified")
-
-	// ErrNoServices is logged when no services are given to the Load method
-	ErrNoServices = errors.New("no services specified")
 )
 
 type result struct {
@@ -80,13 +75,23 @@ func New(logger *logrus.Logger, clients Clients) *Data {
 
 // Load concurrently loads the required data as specified during creation
 func (d *Data) Load(regions, services []string) {
-	if len(regions) == 0 {
+	if len(services) == 0 {
+		d.log.Error(ErrNoServices)
+		return
+	}
+
+	if len(regions) == 0 && hasRegionalServices(services) {
 		d.log.Error(ErrNoRegions)
 		return
 	}
 
-	if len(services) == 0 {
-		d.log.Error(ErrNoServices)
+	if err := validateRegions(regions); err != nil {
+		d.log.Error(err)
+		return
+	}
+
+	if err := validateServices(services); err != nil {
+		d.log.Error(err)
 		return
 	}
 
@@ -109,6 +114,7 @@ func (d *Data) Load(regions, services []string) {
 		}
 
 		if stringInSlice(ServiceEBS, services) {
+			// EBS volumes are part of the EC2 api and therefore require an EC2 client
 			go d.loadEBSVolumes(d.clients.GetEC2Client(region), region)
 		}
 
@@ -117,7 +123,8 @@ func (d *Data) Load(regions, services []string) {
 		}
 	}
 
-	time.Sleep(500 * time.Millisecond)
+	// Delay to give the first wg.Add call time to complete
+	time.Sleep(100 * time.Millisecond)
 
 	d.wg.Wait()
 	close(d.results)
@@ -128,13 +135,13 @@ func (d *Data) startWorker() {
 	for {
 		res, ok := <-d.results
 		if !ok {
-			d.log.Debug("results channel closed")
 			return
 		}
-		d.log.Debugf("worker recieved a result")
 		if res.Err != nil {
+			d.log.Debugf("worker recieved an error")
 			d.log.Error(res.Err)
 		} else {
+			d.log.Debugf("worker recieved a row")
 			d.appendRow(res.Row)
 		}
 	}
@@ -154,4 +161,31 @@ func stringInSlice(needle string, haystack []string) bool {
 	}
 
 	return false
+}
+
+func hasRegionalServices(services []string) bool {
+	for _, service := range services {
+		if service == ServiceEBS || service == ServiceEC2 || service == ServiceELB {
+			return true
+		}
+	}
+	return false
+}
+
+func validateRegions(regions []string) error {
+	for _, region := range regions {
+		if !stringInSlice(region, ValidRegions) {
+			return newErrInvalidRegion(region)
+		}
+	}
+	return nil
+}
+
+func validateServices(services []string) error {
+	for _, service := range services {
+		if !stringInSlice(service, ValidServices) {
+			return newErrInvalidService(service)
+		}
+	}
+	return nil
 }

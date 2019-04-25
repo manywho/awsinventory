@@ -76,7 +76,7 @@ func (e S3ErrorMock) ListBuckets(cfg *s3.ListBucketsInput) (*s3.ListBucketsOutpu
 func TestCanLoadS3Buckets(t *testing.T) {
 	d := New(logrus.New(), TestClients{S3: S3Mock{}})
 
-	d.Load([]string{"test-region"}, []string{ServiceS3})
+	d.Load([]string{ValidRegions[0]}, []string{ServiceS3})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
@@ -96,7 +96,7 @@ func TestLoadS3BucketsLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{S3: S3ErrorMock{}})
 
-	d.Load([]string{"test-region"}, []string{ServiceS3})
+	d.Load([]string{ValidRegions[0]}, []string{ServiceS3})
 
 	buf.Flush()
 	require.Contains(t, output.String(), testError.Error())

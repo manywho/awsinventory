@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLoadExitsEarlyWhenRegionsIsEmpty(t *testing.T) {
+func TestLoadExitsEarlyWhenRegionsIsEmptyAndRegionalServicesAreIncluded(t *testing.T) {
 	var output bytes.Buffer
 	buf := bufio.NewWriter(&output)
 
@@ -19,7 +19,7 @@ func TestLoadExitsEarlyWhenRegionsIsEmpty(t *testing.T) {
 
 	d := New(logger, TestClients{})
 
-	d.Load([]string{}, []string{})
+	d.Load([]string{}, []string{ServiceEC2})
 
 	buf.Flush()
 
@@ -35,7 +35,7 @@ func TestLoadExitsEarlyWhenServicesIsEmpty(t *testing.T) {
 
 	d := New(logger, TestClients{})
 
-	d.Load([]string{"test-region"}, []string{})
+	d.Load([]string{ValidRegions[0]}, []string{})
 
 	buf.Flush()
 
