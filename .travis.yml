@@ -7,6 +7,9 @@ go:
 env:
 - GO111MODULE=on
 
+before_install:
+  - go get -t -v ./...
+
 script:
   - make codecov
 
