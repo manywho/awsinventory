@@ -1,8 +1,6 @@
 package data_test
 
 import (
-	"bufio"
-	"bytes"
 	"testing"
 	"time"
 
@@ -10,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/require"
 
 	. "github.com/itmecho/awsinventory/internal/data"
@@ -100,16 +99,12 @@ func TestCanLoadIAMUsers(t *testing.T) {
 }
 
 func TestLoadIAMUsersLogsError(t *testing.T) {
-	var output bytes.Buffer
-	buf := bufio.NewWriter(&output)
-
-	logger := logrus.New()
-	logger.SetOutput(buf)
+	logger, hook := logrustest.NewNullLogger()
 
 	d := New(logger, TestClients{IAM: IAMErrorMock{}})
 
 	d.Load([]string{ValidRegions[0]}, []string{ServiceIAM})
 
-	buf.Flush()
-	require.Contains(t, output.String(), testError.Error())
+	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	hook.Reset()
 }

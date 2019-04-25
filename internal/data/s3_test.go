@@ -1,8 +1,6 @@
 package data_test
 
 import (
-	"bufio"
-	"bytes"
 	"testing"
 	"time"
 
@@ -10,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/require"
 
 	. "github.com/itmecho/awsinventory/internal/data"
@@ -88,16 +87,11 @@ func TestCanLoadS3Buckets(t *testing.T) {
 }
 
 func TestLoadS3BucketsLogsError(t *testing.T) {
-	var output bytes.Buffer
-	buf := bufio.NewWriter(&output)
-
-	logger := logrus.New()
-	logger.SetOutput(buf)
+	logger, hook := logrustest.NewNullLogger()
 
 	d := New(logger, TestClients{S3: S3ErrorMock{}})
 
 	d.Load([]string{ValidRegions[0]}, []string{ServiceS3})
 
-	buf.Flush()
-	require.Contains(t, output.String(), testError.Error())
+	require.Contains(t, hook.LastEntry().Message, testError.Error())
 }

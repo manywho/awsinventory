@@ -1,8 +1,6 @@
 package data_test
 
 import (
-	"bufio"
-	"bytes"
 	"testing"
 	"time"
 
@@ -10,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/require"
 
 	. "github.com/itmecho/awsinventory/internal/data"
@@ -159,16 +158,11 @@ func TestCanLoadEC2Instances(t *testing.T) {
 }
 
 func TestLoadEC2InstancesLogsError(t *testing.T) {
-	var output bytes.Buffer
-	buf := bufio.NewWriter(&output)
-
-	logger := logrus.New()
-	logger.SetOutput(buf)
+	logger, hook := logrustest.NewNullLogger()
 
 	d := New(logger, TestClients{EC2: EC2ErrorMock{}})
 
 	d.Load([]string{ValidRegions[0]}, []string{"ec2"})
 
-	buf.Flush()
-	require.Contains(t, output.String(), testError.Error())
+	require.Contains(t, hook.LastEntry().Message, testError.Error())
 }

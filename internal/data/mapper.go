@@ -7,6 +7,8 @@ type MapperFunc func(inventory.Row) error
 
 // MapRows takes a MapperFunc as an argument and runs it against each stored row
 func (d *Data) MapRows(mapper MapperFunc) {
+	d.lock.Lock()
+	defer d.lock.Unlock()
 	for _, row := range d.rows {
 		if err := mapper(row); err != nil {
 			d.log.Error(err)
