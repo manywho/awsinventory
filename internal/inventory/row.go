@@ -26,7 +26,7 @@ func (r Row) StringSlice() []string {
 	record = append(record, r.ID)
 	record = append(record, r.AssetType)
 	record = append(record, r.Location)
-	record = append(record, r.CreationDate.String())
+	record = append(record, getDateString(r.CreationDate))
 	record = append(record, r.Application)
 	record = append(record, r.Hardware)
 	record = append(record, r.Baseline)
@@ -35,7 +35,15 @@ func (r Row) StringSlice() []string {
 	record = append(record, r.ExternalIP)
 	record = append(record, r.VPCID)
 	record = append(record, r.DNSName)
-	record = append(record, r.PasswordLastUsed.String())
+	record = append(record, getDateString(r.PasswordLastUsed))
 
 	return record
+}
+
+func getDateString(t time.Time) string {
+	var emptyTime time.Time
+	if t == emptyTime {
+		return ""
+	}
+	return t.String()
 }
