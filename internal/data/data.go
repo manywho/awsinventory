@@ -38,6 +38,7 @@ var (
 		ServiceEC2,
 		ServiceELB,
 		ServiceIAM,
+		ServiceRDS,
 		ServiceS3,
 	}
 )
@@ -121,6 +122,10 @@ func (d *Data) Load(regions, services []string) {
 
 		if stringInSlice(ServiceELB, services) {
 			go d.loadELBs(d.clients.GetELBClient(region), region)
+		}
+
+		if stringInSlice(ServiceRDS, services) {
+			go d.loadRDSInstances(d.clients.GetRDSClient(region), region)
 		}
 	}
 

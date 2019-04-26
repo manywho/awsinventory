@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
 
@@ -15,6 +16,7 @@ type TestClients struct {
 	EC2 ec2iface.EC2API
 	ELB elbiface.ELBAPI
 	IAM iamiface.IAMAPI
+	RDS rdsiface.RDSAPI
 	S3  s3iface.S3API
 }
 
@@ -28,6 +30,10 @@ func (c TestClients) GetIAMClient(region string) iamiface.IAMAPI {
 
 func (c TestClients) GetELBClient(region string) elbiface.ELBAPI {
 	return c.ELB
+}
+
+func (c TestClients) GetRDSClient(region string) rdsiface.RDSAPI {
+	return c.RDS
 }
 
 func (c TestClients) GetS3Client(region string) s3iface.S3API {
