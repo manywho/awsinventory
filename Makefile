@@ -1,13 +1,13 @@
-.PHONY: build coverage test
+.PHONY: build ci test test-full
 
-coverage:
-	go test $(FLAGS) -coverprofile=/tmp/go-code-cover ./...
+test:
+	go test $(FLAGS) ./...
 
-codecov:
+test-full:
+	go test $(FLAGS) -race -cover ./...
+
+ci:
 	./scripts/codecov.sh
 
 build:
 	go build -o awsinventory ./cmd/awsinventory
-
-test:
-	go test $(FLAGS) ./...
