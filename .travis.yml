@@ -12,6 +12,7 @@ script:
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)
+- rm coverage.txt
 
 before_deploy:
 - VERSION=$TRAVIS_TAG make release
@@ -22,6 +23,7 @@ deploy:
     secure: bQ+EsYWI5/ESQuD7zhlsl0Kp7C35f/nRRzAUGKClvfvoA03bqPxT5FpEnrbd2ayHn1fqWwP+yuXrOWDddKW/ImUJehmb991AjOqK3+egJ0O10d5puvH4TAynlrIW3qc4hPKgJoMuwQNUh2zzhOUL43bZWCJJfV2hqaEiCFWnTpZ8PmmOBeKZ4MDn5+CGhIWnL1h6Z3izGmTYoIVpjX2O6leLZxMOjhDCy/GmO18nl219UIYk7Q1qgzEfy1scYhVQmz/9xjJT3aUBz1UrtMK4UYu7O2gOLHBramyTz9XDqlEfC/1zpsKF0ddJZA14BzgskuK1xKKFkaL4jQaJ9Of3lwjzzbfhLPydqs6eHpQ3xhxeja1SGaZwjNHeoiEqa65MKJ7Rp1NJrK2wBQLBKiBzAv3miHRayKHwlgvZVTRJjwlzx3Bvz0lQhYe9jqLgaDWeqT2JwNe+xPD3ldx62MUnL5oMfsGnSRhCKqr6F0QL72MXgKLlXlNYVknvTMH34ZHgyhjFFFk79x7130Bpn1EsTEJFxM9zUWxbk1q4nTt7OtF8T+GeaEESr8KJcnprT23IWWK4owKXYXSD4TSwjZsKBksVrsL/egNCeC3T0kgYlHdncPrvrNQJSDW0cVDQZnClUtlFAAavQ9aYpVsKlSLAdGWU1Ppbq0zyvp1Y+f791JA=
   file_glob: true
   file: build/awsinventory-*
+  skip_cleanup: true
   draft: true
   on:
     tags: true
