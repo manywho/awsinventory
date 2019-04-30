@@ -34,12 +34,8 @@ func (d *Data) loadIAMUsers(iamSvc iamiface.IAMAPI) {
 	for _, u := range out.Users {
 		d.results <- result{
 			Row: inventory.Row{
-				ID:               aws.StringValue(u.UserId),
-				AssetType:        AssetTypeIAMUser,
-				Location:         "global",
-				CreationDate:     aws.TimeValue(u.CreateDate),
-				Application:      aws.StringValue(u.UserName),
-				PasswordLastUsed: aws.TimeValue(u.PasswordLastUsed),
+				UniqueAssetIdentifier: aws.StringValue(u.UserName),
+				AssetType:             AssetTypeIAMUser,
 			},
 		}
 	}

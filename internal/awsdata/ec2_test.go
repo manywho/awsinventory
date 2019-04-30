@@ -2,7 +2,6 @@ package awsdata_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -17,40 +16,40 @@ import (
 
 var testEC2InstanceRows = []inventory.Row{
 	{
-		ID:           "i-12345678",
-		AssetType:    "EC2 Instance",
-		Location:     ValidRegions[0],
-		CreationDate: time.Now().AddDate(0, 0, -1),
-		Application:  "test app 1",
-		Hardware:     "m4.large",
-		Baseline:     "ami-12345678",
-		InternalIP:   "10.0.1.2",
-		ExternalIP:   "203.0.113.10",
-		VPCID:        "vpc-12345678",
+		UniqueAssetIdentifier:     "i-12345678",
+		AssetType:                 AssetTypeEC2Instance,
+		Virtual:                   true,
+		Location:                  ValidRegions[0],
+		Function:                  "test app 1",
+		HardwareMakeModel:         "m4.large",
+		BaselineConfigurationName: "ami-12345678",
+		IPv4orIPv6Address:         "203.0.113.10\n10.0.1.2",
+		Public:                    true,
+		VLANNetworkID:             "vpc-12345678",
 	},
 	{
-		ID:           "i-abcdefgh",
-		AssetType:    "EC2 Instance",
-		Location:     ValidRegions[0],
-		CreationDate: time.Now().AddDate(0, 0, -2),
-		Application:  "test app 2",
-		Hardware:     "t2.medium",
-		Baseline:     "ami-abcdefgh",
-		InternalIP:   "10.3.4.5",
-		ExternalIP:   "203.0.113.20",
-		VPCID:        "vpc-abcdefgh",
+		UniqueAssetIdentifier:     "i-abcdefgh",
+		AssetType:                 AssetTypeEC2Instance,
+		Virtual:                   true,
+		Location:                  ValidRegions[0],
+		Function:                  "test app 2",
+		HardwareMakeModel:         "t2.medium",
+		BaselineConfigurationName: "ami-abcdefgh",
+		IPv4orIPv6Address:         "10.0.1.3",
+		Public:                    false,
+		VLANNetworkID:             "vpc-abcdefgh",
 	},
 	{
-		ID:           "i-a1b2c3d4",
-		AssetType:    "EC2 Instance",
-		Location:     ValidRegions[0],
-		CreationDate: time.Now().AddDate(0, 0, -3),
-		Application:  "test app 3",
-		Hardware:     "r4.medium",
-		Baseline:     "ami-a1b2c3d4",
-		InternalIP:   "10.6.7.8",
-		ExternalIP:   "203.0.113.30",
-		VPCID:        "vpc-a1b2c3d4",
+		UniqueAssetIdentifier:     "i-a1b2c3d4",
+		AssetType:                 AssetTypeEC2Instance,
+		Virtual:                   true,
+		Location:                  ValidRegions[0],
+		Function:                  "test app 3",
+		HardwareMakeModel:         "t2.small",
+		BaselineConfigurationName: "ami-a1b2c3d4",
+		IPv4orIPv6Address:         "10.0.1.4",
+		Public:                    false,
+		VLANNetworkID:             "vpc-a1b2c3d4",
 	},
 }
 
@@ -60,17 +59,20 @@ var testEC2InstanceOutput = &ec2.DescribeInstancesOutput{
 		{
 			Instances: []*ec2.Instance{
 				{
-					InstanceId:       aws.String(testEC2InstanceRows[0].ID),
-					InstanceType:     aws.String(testEC2InstanceRows[0].Hardware),
-					ImageId:          aws.String(testEC2InstanceRows[0].Baseline),
-					LaunchTime:       aws.Time(testEC2InstanceRows[0].CreationDate),
-					PublicIpAddress:  aws.String(testEC2InstanceRows[0].ExternalIP),
-					PrivateIpAddress: aws.String(testEC2InstanceRows[0].InternalIP),
-					VpcId:            aws.String(testEC2InstanceRows[0].VPCID),
+					InstanceId:      aws.String(testEC2InstanceRows[0].UniqueAssetIdentifier),
+					InstanceType:    aws.String(testEC2InstanceRows[0].HardwareMakeModel),
+					ImageId:         aws.String(testEC2InstanceRows[0].BaselineConfigurationName),
+					PublicIpAddress: aws.String("203.0.113.10"),
+					NetworkInterfaces: []*ec2.InstanceNetworkInterface{
+						{
+							PrivateIpAddress: aws.String("10.0.1.2"),
+						},
+					},
+					VpcId: aws.String(testEC2InstanceRows[0].VLANNetworkID),
 					Tags: []*ec2.Tag{
 						{
 							Key:   aws.String("Name"),
-							Value: aws.String(testEC2InstanceRows[0].Application),
+							Value: aws.String(testEC2InstanceRows[0].Function),
 						},
 						{
 							Key:   aws.String("extra tag"),
@@ -79,17 +81,19 @@ var testEC2InstanceOutput = &ec2.DescribeInstancesOutput{
 					},
 				},
 				{
-					InstanceId:       aws.String(testEC2InstanceRows[1].ID),
-					InstanceType:     aws.String(testEC2InstanceRows[1].Hardware),
-					ImageId:          aws.String(testEC2InstanceRows[1].Baseline),
-					LaunchTime:       aws.Time(testEC2InstanceRows[1].CreationDate),
-					PublicIpAddress:  aws.String(testEC2InstanceRows[1].ExternalIP),
-					PrivateIpAddress: aws.String(testEC2InstanceRows[1].InternalIP),
-					VpcId:            aws.String(testEC2InstanceRows[1].VPCID),
+					InstanceId:   aws.String(testEC2InstanceRows[1].UniqueAssetIdentifier),
+					InstanceType: aws.String(testEC2InstanceRows[1].HardwareMakeModel),
+					ImageId:      aws.String(testEC2InstanceRows[1].BaselineConfigurationName),
+					NetworkInterfaces: []*ec2.InstanceNetworkInterface{
+						{
+							PrivateIpAddress: aws.String(testEC2InstanceRows[1].IPv4orIPv6Address),
+						},
+					},
+					VpcId: aws.String(testEC2InstanceRows[1].VLANNetworkID),
 					Tags: []*ec2.Tag{
 						{
 							Key:   aws.String("Name"),
-							Value: aws.String(testEC2InstanceRows[1].Application),
+							Value: aws.String(testEC2InstanceRows[1].Function),
 						},
 						{
 							Key:   aws.String("extra tag"),
@@ -102,17 +106,19 @@ var testEC2InstanceOutput = &ec2.DescribeInstancesOutput{
 		{
 			Instances: []*ec2.Instance{
 				{
-					InstanceId:       aws.String(testEC2InstanceRows[2].ID),
-					InstanceType:     aws.String(testEC2InstanceRows[2].Hardware),
-					ImageId:          aws.String(testEC2InstanceRows[2].Baseline),
-					LaunchTime:       aws.Time(testEC2InstanceRows[2].CreationDate),
-					PublicIpAddress:  aws.String(testEC2InstanceRows[2].ExternalIP),
-					PrivateIpAddress: aws.String(testEC2InstanceRows[2].InternalIP),
-					VpcId:            aws.String(testEC2InstanceRows[2].VPCID),
+					InstanceId:   aws.String(testEC2InstanceRows[2].UniqueAssetIdentifier),
+					InstanceType: aws.String(testEC2InstanceRows[2].HardwareMakeModel),
+					ImageId:      aws.String(testEC2InstanceRows[2].BaselineConfigurationName),
+					NetworkInterfaces: []*ec2.InstanceNetworkInterface{
+						{
+							PrivateIpAddress: aws.String(testEC2InstanceRows[2].IPv4orIPv6Address),
+						},
+					},
+					VpcId: aws.String(testEC2InstanceRows[2].VLANNetworkID),
 					Tags: []*ec2.Tag{
 						{
 							Key:   aws.String("Name"),
-							Value: aws.String(testEC2InstanceRows[2].Application),
+							Value: aws.String(testEC2InstanceRows[2].Function),
 						},
 						{
 							Key:   aws.String("extra tag"),

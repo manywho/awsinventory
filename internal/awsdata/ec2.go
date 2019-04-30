@@ -1,6 +1,8 @@
 package awsdata
 
 import (
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
@@ -40,18 +42,28 @@ func (d *Data) loadEC2Instances(ec2Svc ec2iface.EC2API, region string) {
 				}
 			}
 
+			var ips []string
+
+			if aws.StringValue(i.PublicIpAddress) != "" {
+				ips = append(ips, aws.StringValue(i.PublicIpAddress))
+			}
+
+			for _, networkInterface := range i.NetworkInterfaces {
+				ips = append(ips, aws.StringValue(networkInterface.PrivateIpAddress))
+			}
+
 			d.results <- result{
 				Row: inventory.Row{
-					ID:           aws.StringValue(i.InstanceId),
-					AssetType:    AssetTypeEC2Instance,
-					Location:     region,
-					CreationDate: aws.TimeValue(i.LaunchTime),
-					Application:  name,
-					Hardware:     aws.StringValue(i.InstanceType),
-					Baseline:     aws.StringValue(i.ImageId),
-					InternalIP:   aws.StringValue(i.PrivateIpAddress),
-					ExternalIP:   aws.StringValue(i.PublicIpAddress),
-					VPCID:        aws.StringValue(i.VpcId),
+					UniqueAssetIdentifier:     aws.StringValue(i.InstanceId),
+					IPv4orIPv6Address:         strings.Join(ips, "\n"),
+					Virtual:                   true,
+					Public:                    aws.StringValue(i.PublicIpAddress) != "",
+					AssetType:                 AssetTypeEC2Instance,
+					Location:                  region,
+					Function:                  name,
+					HardwareMakeModel:         aws.StringValue(i.InstanceType),
+					BaselineConfigurationName: aws.StringValue(i.ImageId),
+					VLANNetworkID:             aws.StringValue(i.VpcId),
 				},
 			}
 		}

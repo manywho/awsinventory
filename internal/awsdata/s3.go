@@ -34,10 +34,8 @@ func (d *Data) loadS3Buckets(s3Svc s3iface.S3API) {
 	for _, b := range out.Buckets {
 		d.results <- result{
 			Row: inventory.Row{
-				ID:           aws.StringValue(b.Name),
-				AssetType:    AssetTypeS3Bucket,
-				Location:     "global",
-				CreationDate: aws.TimeValue(b.CreationDate),
+				UniqueAssetIdentifier: aws.StringValue(b.Name),
+				AssetType:             AssetTypeS3Bucket,
 			},
 		}
 	}

@@ -2,7 +2,6 @@ package awsdata_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -17,22 +16,16 @@ import (
 
 var testS3Rows = []inventory.Row{
 	{
-		ID:           "test-bucket-1",
-		AssetType:    AssetTypeS3Bucket,
-		Location:     "global",
-		CreationDate: time.Now().AddDate(0, 0, -1),
+		UniqueAssetIdentifier: "test-bucket-1",
+		AssetType:             AssetTypeS3Bucket,
 	},
 	{
-		ID:           "test-bucket-2",
-		AssetType:    AssetTypeS3Bucket,
-		Location:     "global",
-		CreationDate: time.Now().AddDate(0, 0, -2),
+		UniqueAssetIdentifier: "test-bucket-2",
+		AssetType:             AssetTypeS3Bucket,
 	},
 	{
-		ID:           "test-bucket-3",
-		AssetType:    AssetTypeS3Bucket,
-		Location:     "global",
-		CreationDate: time.Now().AddDate(0, 0, -3),
+		UniqueAssetIdentifier: "test-bucket-3",
+		AssetType:             AssetTypeS3Bucket,
 	},
 }
 
@@ -40,16 +33,13 @@ var testS3Rows = []inventory.Row{
 var testS3Output = &s3.ListBucketsOutput{
 	Buckets: []*s3.Bucket{
 		{
-			Name:         aws.String(testS3Rows[0].ID),
-			CreationDate: aws.Time(testS3Rows[0].CreationDate),
+			Name: aws.String(testS3Rows[0].UniqueAssetIdentifier),
 		},
 		{
-			Name:         aws.String(testS3Rows[1].ID),
-			CreationDate: aws.Time(testS3Rows[1].CreationDate),
+			Name: aws.String(testS3Rows[1].UniqueAssetIdentifier),
 		},
 		{
-			Name:         aws.String(testS3Rows[2].ID),
-			CreationDate: aws.Time(testS3Rows[2].CreationDate),
+			Name: aws.String(testS3Rows[2].UniqueAssetIdentifier),
 		},
 	},
 }

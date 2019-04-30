@@ -1,49 +1,67 @@
 package inventory
 
-import "time"
-
 // Row represents a row in the report
 type Row struct {
-	ID               string
-	AssetType        string
-	Location         string
-	CreationDate     time.Time
-	Application      string
-	Hardware         string
-	Baseline         string
-	OSNameVersion    string
-	InternalIP       string
-	ExternalIP       string
-	VPCID            string
-	DNSName          string
-	PasswordLastUsed time.Time
+	UniqueAssetIdentifier          string
+	IPv4orIPv6Address              string
+	Virtual                        bool
+	Public                         bool
+	DNSNameOrURL                   string
+	NetBIOSName                    string
+	MACAddress                     string
+	AuthenticatedScan              bool
+	BaselineConfigurationName      string
+	OSNameandVersion               string
+	Location                       string
+	AssetType                      string
+	HardwareMakeModel              string
+	InLatestScan                   bool
+	SoftwareDatabaseVendor         string
+	SoftwareDatabaseNameAndVersion string
+	PatchLevel                     string
+	Function                       string
+	Comments                       string
+	SerialAssetTagNumber           string
+	VLANNetworkID                  string
+	SystemAdministratorOwner       string
+	ApplicationAdministratorOwner  string
 }
 
 // StringSlice returns a slice of strings representing the fields on the Row
 func (r Row) StringSlice() []string {
 	var record []string
 
-	record = append(record, r.ID)
-	record = append(record, r.AssetType)
+	record = append(record, r.UniqueAssetIdentifier)
+	record = append(record, r.IPv4orIPv6Address)
+	record = append(record, getBoolString(r.Virtual))
+	record = append(record, getBoolString(r.Public))
+	record = append(record, r.DNSNameOrURL)
+	record = append(record, r.NetBIOSName)
+	record = append(record, r.MACAddress)
+	record = append(record, getBoolString(r.AuthenticatedScan))
+	record = append(record, r.BaselineConfigurationName)
+	record = append(record, r.OSNameandVersion)
 	record = append(record, r.Location)
-	record = append(record, getDateString(r.CreationDate))
-	record = append(record, r.Application)
-	record = append(record, r.Hardware)
-	record = append(record, r.Baseline)
-	record = append(record, r.OSNameVersion)
-	record = append(record, r.InternalIP)
-	record = append(record, r.ExternalIP)
-	record = append(record, r.VPCID)
-	record = append(record, r.DNSName)
-	record = append(record, getDateString(r.PasswordLastUsed))
+	record = append(record, r.AssetType)
+	record = append(record, r.HardwareMakeModel)
+	record = append(record, getBoolString(r.InLatestScan))
+	record = append(record, r.SoftwareDatabaseVendor)
+	record = append(record, r.SoftwareDatabaseNameAndVersion)
+	record = append(record, r.PatchLevel)
+	record = append(record, r.Function)
+	record = append(record, r.Comments)
+	record = append(record, r.SerialAssetTagNumber)
+	record = append(record, r.VLANNetworkID)
+	record = append(record, r.SystemAdministratorOwner)
+	record = append(record, r.ApplicationAdministratorOwner)
 
 	return record
 }
 
-func getDateString(t time.Time) string {
-	var emptyTime time.Time
-	if t == emptyTime {
-		return ""
+func getBoolString(b bool) string {
+	if b {
+		return "Yes"
 	}
-	return t.String()
+
+	return "No"
 }

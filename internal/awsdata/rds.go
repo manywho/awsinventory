@@ -34,23 +34,16 @@ func (d *Data) loadRDSInstances(rdsSvc rdsiface.RDSAPI, region string) {
 
 	log.Info("processing data")
 	for _, i := range out.DBInstances {
-
-		var public string
-		if aws.BoolValue(i.PubliclyAccessible) {
-			public = "publicly accessible"
-		}
-
 		d.results <- result{
 			Row: inventory.Row{
-				ID:           aws.StringValue(i.DBInstanceIdentifier),
-				AssetType:    AssetTypeRDSInstance,
-				Location:     region,
-				CreationDate: aws.TimeValue(i.InstanceCreateTime),
-				Application:  fmt.Sprintf("%s %s", aws.StringValue(i.Engine), aws.StringValue(i.EngineVersion)),
-				Hardware:     aws.StringValue(i.DBInstanceClass),
-				InternalIP:   aws.StringValue(i.Endpoint.Address),
-				ExternalIP:   public,
-				VPCID:        aws.StringValue(i.DBSubnetGroup.VpcId),
+				UniqueAssetIdentifier:          aws.StringValue(i.DBInstanceIdentifier),
+				AssetType:                      AssetTypeRDSInstance,
+				Location:                       region,
+				SoftwareDatabaseNameAndVersion: fmt.Sprintf("%s %s", aws.StringValue(i.Engine), aws.StringValue(i.EngineVersion)),
+				HardwareMakeModel:              aws.StringValue(i.DBInstanceClass),
+				DNSNameOrURL:                   aws.StringValue(i.Endpoint.Address),
+				Public:                         aws.BoolValue(i.PubliclyAccessible),
+				VLANNetworkID:                  aws.StringValue(i.DBSubnetGroup.VpcId),
 			},
 		}
 	}

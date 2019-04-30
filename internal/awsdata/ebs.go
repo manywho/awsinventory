@@ -43,12 +43,11 @@ func (d *Data) loadEBSVolumes(ec2Svc ec2iface.EC2API, region string) {
 
 		d.results <- result{
 			Row: inventory.Row{
-				ID:           aws.StringValue(v.VolumeId),
-				AssetType:    AssetTypeEBSVolume,
-				Location:     aws.StringValue(v.AvailabilityZone),
-				CreationDate: aws.TimeValue(v.CreateTime),
-				Application:  name,
-				Hardware:     fmt.Sprintf("%s (%dGB)", aws.StringValue(v.VolumeType), aws.Int64Value(v.Size)),
+				UniqueAssetIdentifier: aws.StringValue(v.VolumeId),
+				AssetType:             AssetTypeEBSVolume,
+				Location:              aws.StringValue(v.AvailabilityZone),
+				Function:              name,
+				HardwareMakeModel:     fmt.Sprintf("%s (%dGB)", aws.StringValue(v.VolumeType), aws.Int64Value(v.Size)),
 			},
 		}
 	}

@@ -2,7 +2,6 @@ package awsdata_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
@@ -17,35 +16,32 @@ import (
 
 var testRDSInstanceRows = []inventory.Row{
 	{
-		ID:           "test-db-1",
-		AssetType:    "RDS Instance",
-		Location:     ValidRegions[0],
-		CreationDate: time.Now().AddDate(0, 0, -1),
-		Application:  "mysql 5.7",
-		Hardware:     "db.t2.medium",
-		InternalIP:   "test-db-1.rds.aws.amaozn.com",
-		VPCID:        "vpc-12345678",
+		UniqueAssetIdentifier:          "test-db-1",
+		AssetType:                      "RDS Instance",
+		Location:                       ValidRegions[0],
+		SoftwareDatabaseNameAndVersion: "mysql 5.7",
+		HardwareMakeModel:              "db.t2.medium",
+		DNSNameOrURL:                   "test-db-1.rds.aws.amazon.com",
+		VLANNetworkID:                  "vpc-12345678",
 	},
 	{
-		ID:           "test-db-2",
-		AssetType:    "RDS Instance",
-		Location:     ValidRegions[0],
-		CreationDate: time.Now().AddDate(0, 0, -1),
-		Application:  "postgres 9.6",
-		Hardware:     "db.t2.small",
-		InternalIP:   "test-db-2.rds.aws.amaozn.com",
-		VPCID:        "vpc-abcdefgh",
+		UniqueAssetIdentifier:          "test-db-2",
+		AssetType:                      "RDS Instance",
+		Location:                       ValidRegions[0],
+		SoftwareDatabaseNameAndVersion: "postgres 9.6",
+		HardwareMakeModel:              "db.t2.small",
+		DNSNameOrURL:                   "test-db-2.rds.aws.amazon.com",
+		VLANNetworkID:                  "vpc-abcdefgh",
 	},
 	{
-		ID:           "test-db-3",
-		AssetType:    "RDS Instance",
-		Location:     ValidRegions[0],
-		CreationDate: time.Now().AddDate(0, 0, -1),
-		Application:  "postgres 10.0",
-		Hardware:     "db.m4.large",
-		InternalIP:   "test-db-3.rds.aws.amaozn.com",
-		ExternalIP:   "publicly accessible",
-		VPCID:        "vpc-a1b2c3d4",
+		UniqueAssetIdentifier:          "test-db-3",
+		AssetType:                      "RDS Instance",
+		Location:                       ValidRegions[0],
+		SoftwareDatabaseNameAndVersion: "postgres 10.0",
+		HardwareMakeModel:              "db.m4.large",
+		DNSNameOrURL:                   "test-db-3.rds.aws.amazon.com",
+		Public:                         true,
+		VLANNetworkID:                  "vpc-a1b2c3d4",
 	},
 }
 
@@ -53,45 +49,42 @@ var testRDSInstanceRows = []inventory.Row{
 var testRDSInstanceOutput = &rds.DescribeDBInstancesOutput{
 	DBInstances: []*rds.DBInstance{
 		{
-			DBInstanceIdentifier: aws.String(testRDSInstanceRows[0].ID),
-			InstanceCreateTime:   aws.Time(testRDSInstanceRows[0].CreationDate),
+			DBInstanceIdentifier: aws.String(testRDSInstanceRows[0].UniqueAssetIdentifier),
 			Engine:               aws.String("mysql"),
 			EngineVersion:        aws.String("5.7"),
 			DBInstanceClass:      aws.String("db.t2.medium"),
 			Endpoint: &rds.Endpoint{
-				Address: aws.String(testRDSInstanceRows[0].InternalIP),
+				Address: aws.String(testRDSInstanceRows[0].DNSNameOrURL),
 			},
 			PubliclyAccessible: aws.Bool(false),
 			DBSubnetGroup: &rds.DBSubnetGroup{
-				VpcId: aws.String(testRDSInstanceRows[0].VPCID),
+				VpcId: aws.String(testRDSInstanceRows[0].VLANNetworkID),
 			},
 		},
 		{
-			DBInstanceIdentifier: aws.String(testRDSInstanceRows[1].ID),
-			InstanceCreateTime:   aws.Time(testRDSInstanceRows[1].CreationDate),
+			DBInstanceIdentifier: aws.String(testRDSInstanceRows[1].UniqueAssetIdentifier),
 			Engine:               aws.String("postgres"),
 			EngineVersion:        aws.String("9.6"),
 			DBInstanceClass:      aws.String("db.t2.small"),
 			Endpoint: &rds.Endpoint{
-				Address: aws.String(testRDSInstanceRows[1].InternalIP),
+				Address: aws.String(testRDSInstanceRows[1].DNSNameOrURL),
 			},
 			PubliclyAccessible: aws.Bool(false),
 			DBSubnetGroup: &rds.DBSubnetGroup{
-				VpcId: aws.String(testRDSInstanceRows[1].VPCID),
+				VpcId: aws.String(testRDSInstanceRows[1].VLANNetworkID),
 			},
 		},
 		{
-			DBInstanceIdentifier: aws.String(testRDSInstanceRows[2].ID),
-			InstanceCreateTime:   aws.Time(testRDSInstanceRows[2].CreationDate),
+			DBInstanceIdentifier: aws.String(testRDSInstanceRows[2].UniqueAssetIdentifier),
 			Engine:               aws.String("postgres"),
 			EngineVersion:        aws.String("10.0"),
 			DBInstanceClass:      aws.String("db.m4.large"),
 			Endpoint: &rds.Endpoint{
-				Address: aws.String(testRDSInstanceRows[2].InternalIP),
+				Address: aws.String(testRDSInstanceRows[2].DNSNameOrURL),
 			},
 			PubliclyAccessible: aws.Bool(true),
 			DBSubnetGroup: &rds.DBSubnetGroup{
-				VpcId: aws.String(testRDSInstanceRows[2].VPCID),
+				VpcId: aws.String(testRDSInstanceRows[2].VLANNetworkID),
 			},
 		},
 	},

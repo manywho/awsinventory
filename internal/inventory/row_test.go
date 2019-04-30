@@ -2,43 +2,63 @@ package inventory
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
 var testRow = Row{
-	ID:            "ID",
-	AssetType:     "AssetType",
-	Location:      "Location",
-	CreationDate:  time.Now(),
-	Application:   "Application",
-	Hardware:      "Hardware",
-	Baseline:      "Baseline",
-	OSNameVersion: "OSNameVersion",
-	InternalIP:    "InternalIP",
-	ExternalIP:    "ExternalIP",
-	VPCID:         "VPCID",
-	DNSName:       "DNSName",
+	UniqueAssetIdentifier:          "UniqueAssetIdentifier",
+	IPv4orIPv6Address:              "IPv4orIPv6Address",
+	Virtual:                        true,
+	Public:                         true,
+	DNSNameOrURL:                   "DNSNameOrURL",
+	NetBIOSName:                    "NetBIOSName",
+	MACAddress:                     "MACAddress",
+	AuthenticatedScan:              false,
+	BaselineConfigurationName:      "BaselineConfigurationName",
+	OSNameandVersion:               "OSNameandVersion",
+	Location:                       "Location",
+	AssetType:                      "AssetType",
+	HardwareMakeModel:              "HardwareMakeModel",
+	InLatestScan:                   true,
+	SoftwareDatabaseVendor:         "SoftwareDatabaseVendor",
+	SoftwareDatabaseNameAndVersion: "SoftwareDatabaseNameAndVersion",
+	PatchLevel:                     "PatchLevel",
+	Function:                       "Function",
+	Comments:                       "Comments",
+	SerialAssetTagNumber:           "SerialAssetTagNumber",
+	VLANNetworkID:                  "VLANNetworkID",
+	SystemAdministratorOwner:       "SystemAdministratorOwner",
+	ApplicationAdministratorOwner:  "ApplicationAdministratorOwner",
 }
 
 func TestRowCanReturnSliceOfStrings(t *testing.T) {
 	actual := testRow.StringSlice()
 
 	expected := []string{
-		testRow.ID,
-		testRow.AssetType,
+		testRow.UniqueAssetIdentifier,
+		testRow.IPv4orIPv6Address,
+		"Yes",
+		"Yes",
+		testRow.DNSNameOrURL,
+		testRow.NetBIOSName,
+		testRow.MACAddress,
+		"No",
+		testRow.BaselineConfigurationName,
+		testRow.OSNameandVersion,
 		testRow.Location,
-		testRow.CreationDate.String(),
-		testRow.Application,
-		testRow.Hardware,
-		testRow.Baseline,
-		testRow.OSNameVersion,
-		testRow.InternalIP,
-		testRow.ExternalIP,
-		testRow.VPCID,
-		testRow.DNSName,
-		"",
+		testRow.AssetType,
+		testRow.HardwareMakeModel,
+		"Yes",
+		testRow.SoftwareDatabaseVendor,
+		testRow.SoftwareDatabaseNameAndVersion,
+		testRow.PatchLevel,
+		testRow.Function,
+		testRow.Comments,
+		testRow.SerialAssetTagNumber,
+		testRow.VLANNetworkID,
+		testRow.SystemAdministratorOwner,
+		testRow.ApplicationAdministratorOwner,
 	}
 
 	require.Equal(t, expected, actual)
