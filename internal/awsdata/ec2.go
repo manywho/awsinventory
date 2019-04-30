@@ -43,6 +43,7 @@ func (d *AWSData) loadEC2Instances(ec2Svc ec2iface.EC2API, region string) {
 			}
 
 			var ips []string
+			var macAddresses []string
 
 			if aws.StringValue(i.PublicIpAddress) != "" {
 				ips = append(ips, aws.StringValue(i.PublicIpAddress))
@@ -50,6 +51,7 @@ func (d *AWSData) loadEC2Instances(ec2Svc ec2iface.EC2API, region string) {
 
 			for _, networkInterface := range i.NetworkInterfaces {
 				ips = append(ips, aws.StringValue(networkInterface.PrivateIpAddress))
+				macAddresses = append(macAddresses, aws.StringValue(networkInterface.MacAddress))
 			}
 
 			d.results <- result{
@@ -59,7 +61,7 @@ func (d *AWSData) loadEC2Instances(ec2Svc ec2iface.EC2API, region string) {
 					Virtual:               true,
 					Public:                aws.StringValue(i.PublicIpAddress) != "",
 					// TODO DNSNameOrURL
-					// TODO MACAddress
+					MACAddress:                strings.Join(macAddresses, "\n"),
 					BaselineConfigurationName: aws.StringValue(i.ImageId),
 					Location:                  region,
 					AssetType:                 AssetTypeEC2Instance,

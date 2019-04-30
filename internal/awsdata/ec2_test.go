@@ -17,12 +17,13 @@ import (
 var testEC2InstanceRows = []inventory.Row{
 	{
 		UniqueAssetIdentifier:     "i-12345678",
-		IPv4orIPv6Address:         "203.0.113.10\n10.0.1.2",
+		IPv4orIPv6Address:         "203.0.113.10\n10.0.1.2\n10.0.2.2",
 		Virtual:                   true,
 		Public:                    true,
 		BaselineConfigurationName: "ami-12345678",
 		Location:                  ValidRegions[0],
 		AssetType:                 AssetTypeEC2Instance,
+		MACAddress:                "00:00:00:00:00:00\n11:11:11:11:11:11",
 		HardwareMakeModel:         "m4.large",
 		Function:                  "test app 1",
 		VLANNetworkID:             "vpc-12345678",
@@ -66,6 +67,11 @@ var testEC2InstanceOutput = &ec2.DescribeInstancesOutput{
 					NetworkInterfaces: []*ec2.InstanceNetworkInterface{
 						{
 							PrivateIpAddress: aws.String("10.0.1.2"),
+							MacAddress:       aws.String("00:00:00:00:00:00"),
+						},
+						{
+							PrivateIpAddress: aws.String("10.0.2.2"),
+							MacAddress:       aws.String("11:11:11:11:11:11"),
 						},
 					},
 					VpcId: aws.String(testEC2InstanceRows[0].VLANNetworkID),
