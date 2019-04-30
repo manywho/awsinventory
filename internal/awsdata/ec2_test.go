@@ -158,7 +158,7 @@ func (e EC2ErrorMock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.D
 func TestCanLoadEC2Instances(t *testing.T) {
 	d := New(logrus.New(), TestClients{EC2: EC2Mock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{"ec2"})
+	d.Load([]string{ValidRegions[0]}, []string{ServiceEC2})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
