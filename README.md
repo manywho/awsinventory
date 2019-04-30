@@ -8,6 +8,9 @@
 
 AWS Inventory is a command line tool written in Go to fetch data from AWS and use it to generate a FedRAMP compliant inventory of your assets
 
+## FedRAMP Compliance
+AWS Inventory aims to output a CSV in accordance to the [FedRAMP inventory template](https://www.fedramp.gov/assets/resources/templates/SSP-A13-FedRAMP-Integrated-Inventory-Workbook-Template.xlsx) found [here](https://www.fedramp.gov/templates/)
+
 ## Usage
 
 To use awsinventory, simply download the [latest release](https://github.com/manywho/awsinventory/releases/latest) for your system, make the binary executable, then call it, passing any configuration flags. It uses the AWS SDK for Go to create a session from the shared credentials file (`~/.aws/credentials`). This file is usually generated using the AWS CLI
