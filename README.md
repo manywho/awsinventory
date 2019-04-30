@@ -4,6 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/manywho/awsinventory)](https://goreportcard.com/report/github.com/manywho/awsinventory)
 [![codecov](https://codecov.io/gh/manywho/awsinventory/branch/master/graph/badge.svg)](https://codecov.io/gh/manywho/awsinventory)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![GitHub release](https://img.shields.io/github/release/manywho/awsinventory.svg)
 
 AWS Inventory is a command line tool written in Go to fetch data from AWS and use it to generate a FedRAMP compliant inventory of your assets
 
