@@ -54,15 +54,17 @@ func (d *AWSData) loadEC2Instances(ec2Svc ec2iface.EC2API, region string) {
 
 			d.results <- result{
 				Row: inventory.Row{
-					UniqueAssetIdentifier:     aws.StringValue(i.InstanceId),
-					IPv4orIPv6Address:         strings.Join(ips, "\n"),
-					Virtual:                   true,
-					Public:                    aws.StringValue(i.PublicIpAddress) != "",
-					AssetType:                 AssetTypeEC2Instance,
-					Location:                  region,
-					Function:                  name,
-					HardwareMakeModel:         aws.StringValue(i.InstanceType),
+					UniqueAssetIdentifier: aws.StringValue(i.InstanceId),
+					IPv4orIPv6Address:     strings.Join(ips, "\n"),
+					Virtual:               true,
+					Public:                aws.StringValue(i.PublicIpAddress) != "",
+					// TODO DNSNameOrURL
+					// TODO MACAddress
 					BaselineConfigurationName: aws.StringValue(i.ImageId),
+					Location:                  region,
+					AssetType:                 AssetTypeEC2Instance,
+					HardwareMakeModel:         aws.StringValue(i.InstanceType),
+					Function:                  name,
 					VLANNetworkID:             aws.StringValue(i.VpcId),
 				},
 			}

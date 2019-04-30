@@ -35,10 +35,11 @@ func (d *AWSData) loadELBs(elbSvc elbiface.ELBAPI, region string) {
 		d.results <- result{
 			Row: inventory.Row{
 				UniqueAssetIdentifier: aws.StringValue(l.LoadBalancerName),
-				AssetType:             AssetTypeELB,
-				Location:              region,
-				Function:              aws.StringValue(l.CanonicalHostedZoneName),
+				Virtual:               true,
 				DNSNameOrURL:          aws.StringValue(l.DNSName),
+				Location:              region,
+				AssetType:             AssetTypeELB,
+				Function:              aws.StringValue(l.CanonicalHostedZoneName),
 				VLANNetworkID:         aws.StringValue(l.VPCId),
 			},
 		}

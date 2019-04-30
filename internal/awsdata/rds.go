@@ -36,13 +36,15 @@ func (d *AWSData) loadRDSInstances(rdsSvc rdsiface.RDSAPI, region string) {
 	for _, i := range out.DBInstances {
 		d.results <- result{
 			Row: inventory.Row{
-				UniqueAssetIdentifier:          aws.StringValue(i.DBInstanceIdentifier),
-				AssetType:                      AssetTypeRDSInstance,
-				Location:                       region,
+				UniqueAssetIdentifier: aws.StringValue(i.DBInstanceIdentifier),
+				Virtual:               true,
+				Public:                aws.BoolValue(i.PubliclyAccessible),
+				DNSNameOrURL:          aws.StringValue(i.Endpoint.Address),
+				Location:              region,
+				AssetType:             AssetTypeRDSInstance,
+				HardwareMakeModel:     aws.StringValue(i.DBInstanceClass),
+				// TODO: SoftwareDatabaseVendor
 				SoftwareDatabaseNameAndVersion: fmt.Sprintf("%s %s", aws.StringValue(i.Engine), aws.StringValue(i.EngineVersion)),
-				HardwareMakeModel:              aws.StringValue(i.DBInstanceClass),
-				DNSNameOrURL:                   aws.StringValue(i.Endpoint.Address),
-				Public:                         aws.BoolValue(i.PubliclyAccessible),
 				VLANNetworkID:                  aws.StringValue(i.DBSubnetGroup.VpcId),
 			},
 		}

@@ -17,21 +17,21 @@ import (
 var testEBSVolumeRows = []inventory.Row{
 	{
 		UniqueAssetIdentifier: "vol-12345678",
-		AssetType:             AssetTypeEBSVolume,
 		Location:              ValidRegions[0] + "-1a",
-		Function:              "test app 1",
+		AssetType:             AssetTypeEBSVolume,
 		HardwareMakeModel:     "gp2 (100GB)",
+		Function:              "test app 1",
 	},
 	{
 		UniqueAssetIdentifier: "vol-abcdefgh",
-		AssetType:             AssetTypeEBSVolume,
 		Location:              ValidRegions[0] + "-1b",
+		AssetType:             AssetTypeEBSVolume,
 		HardwareMakeModel:     "gp2 (50GB)",
 	},
 	{
 		UniqueAssetIdentifier: "vol-a1b2c3d4",
-		AssetType:             AssetTypeEBSVolume,
 		Location:              ValidRegions[0] + "-1c",
+		AssetType:             AssetTypeEBSVolume,
 		HardwareMakeModel:     "gp2 (20GB)",
 	},
 }

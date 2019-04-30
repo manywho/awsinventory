@@ -35,6 +35,7 @@ func (d *AWSData) loadIAMUsers(iamSvc iamiface.IAMAPI) {
 		d.results <- result{
 			Row: inventory.Row{
 				UniqueAssetIdentifier: aws.StringValue(u.UserName),
+				Virtual:               true,
 				AssetType:             AssetTypeIAMUser,
 			},
 		}

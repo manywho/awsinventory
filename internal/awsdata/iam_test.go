@@ -17,14 +17,17 @@ import (
 var testIAMRows = []inventory.Row{
 	{
 		UniqueAssetIdentifier: "test-user-1",
+		Virtual:               true,
 		AssetType:             AssetTypeIAMUser,
 	},
 	{
 		UniqueAssetIdentifier: "test-user-2",
+		Virtual:               true,
 		AssetType:             AssetTypeIAMUser,
 	},
 	{
 		UniqueAssetIdentifier: "test-user-3",
+		Virtual:               true,
 		AssetType:             AssetTypeIAMUser,
 	},
 }
