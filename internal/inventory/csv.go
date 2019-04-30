@@ -21,6 +21,7 @@ var csvHeaders = []string{
 	"Hardware Make/Model",
 	"In Latest Scan",
 	"Software/Database Vendor",
+	"Software/Database Name & Version",
 	"Patch Level",
 	"Function",
 	"Comments",
