@@ -1,9 +1,9 @@
-package data_test
+package awsdata_test
 
 import (
 	"testing"
 
-	. "github.com/manywho/awsinventory/internal/data"
+	. "github.com/manywho/awsinventory/internal/awsdata"
 	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/require"
 )

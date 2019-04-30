@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/manywho/awsinventory/internal/data"
+	"github.com/manywho/awsinventory/internal/awsdata"
 
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/spf13/pflag"
@@ -23,14 +23,14 @@ var (
 func init() {
 	pflag.StringVarP(&outputFile, "output-file", "o", "inventory.csv", "path to the output file")
 	pflag.StringSliceVarP(&regions, "regions", "r", []string{}, "regions to gather data from")
-	pflag.StringSliceVarP(&services, "services", "s", data.ValidServices, "services to gather data from")
+	pflag.StringSliceVarP(&services, "services", "s", awsdata.ValidServices, "services to gather data from")
 	pflag.BoolVar(&printRegions, "print-regions", false, "prints the available AWS regions")
 	pflag.StringVarP(&logLevel, "log-level", "l", "warning", "set the level of log output")
 	pflag.BoolVarP(&printVersion, "version", "v", false, "prints the version information")
 	pflag.Parse()
 
 	if printRegions {
-		for _, r := range data.ValidRegions {
+		for _, r := range awsdata.ValidRegions {
 			println(r)
 		}
 		os.Exit(0)
@@ -45,7 +45,7 @@ func init() {
 }
 
 func main() {
-	awsData := data.New(logger, nil)
+	awsData := awsdata.New(logger, nil)
 	awsData.Load(regions, services)
 
 	f, err := os.OpenFile(outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)

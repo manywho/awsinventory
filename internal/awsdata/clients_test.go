@@ -1,4 +1,4 @@
-package data_test
+package awsdata_test
 
 import (
 	"errors"
