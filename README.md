@@ -10,9 +10,13 @@ AWS Inventory is a command line tool written in Go to fetch data from AWS and us
 
 ## Usage
 
-To use awsinventory, simply call the binary and pass any configuration flags. It uses the AWS SDK for Go to create a session from the shared credentials file (`~/.aws/credentials`)
+To use awsinventory, simply download the [latest release](https://github.com/manywho/awsinventory/releases/latest) for your system, make the binary executable, then call it, passing any configuration flags. It uses the AWS SDK for Go to create a session from the shared credentials file (`~/.aws/credentials`). This file is usually generated using the AWS CLI
 
 ```sh
+# Example for Linux 64-bit
+wget -O awsinventory  https://github.com/manywho/awsinventory/releases/download/$VERSION/awsinventory-$VERSION-linux-amd64
+chmod 700 awsinventory
+
 # Build an inventory of services in the EU London AWS region
 ./awsinventory --regions eu-west-2
 ```
