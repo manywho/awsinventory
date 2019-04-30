@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/itmecho/awsinventory/internal/data"
+	"github.com/manywho/awsinventory/internal/data"
 
-	"github.com/itmecho/awsinventory/internal/inventory"
+	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/spf13/pflag"
 )
 

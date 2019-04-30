@@ -1,4 +1,4 @@
-module github.com/itmecho/awsinventory
+module github.com/manywho/awsinventory
 
 go 1.12
 

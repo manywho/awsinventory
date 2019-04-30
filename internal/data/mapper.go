@@ -1,6 +1,6 @@
 package data
 
-import "github.com/itmecho/awsinventory/internal/inventory"
+import "github.com/manywho/awsinventory/internal/inventory"
 
 // MapperFunc takes an inventory row, performs some action, and returns an error
 type MapperFunc func(inventory.Row) error

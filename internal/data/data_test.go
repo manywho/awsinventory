@@ -3,7 +3,7 @@ package data_test
 import (
 	"testing"
 
-	. "github.com/itmecho/awsinventory/internal/data"
+	. "github.com/manywho/awsinventory/internal/data"
 	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/require"
 )

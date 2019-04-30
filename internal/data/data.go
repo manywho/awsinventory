@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/itmecho/awsinventory/internal/inventory"
+	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
 

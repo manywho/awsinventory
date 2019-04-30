@@ -11,8 +11,8 @@ import (
 	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/itmecho/awsinventory/internal/data"
-	"github.com/itmecho/awsinventory/internal/inventory"
+	. "github.com/manywho/awsinventory/internal/data"
+	"github.com/manywho/awsinventory/internal/inventory"
 )
 
 var testEBSVolumeRows = []inventory.Row{
