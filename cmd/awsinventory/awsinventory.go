@@ -17,7 +17,7 @@ var (
 
 func init() {
 	pflag.StringVarP(&outputFile, "output-file", "o", "inventory.csv", "path to the output file")
-	pflag.StringSliceVarP(&regions, "regions", "r", data.ValidRegions, "regions to gather data from")
+	pflag.StringSliceVarP(&regions, "regions", "r", []string{}, "regions to gather data from")
 	pflag.StringSliceVarP(&services, "services", "s", data.ValidServices, "services to gather data from")
 	pflag.StringVarP(&logLevel, "log-level", "l", "warning", "set the level of log output")
 	pflag.Parse()
