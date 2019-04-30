@@ -26,6 +26,7 @@ Usage of ./awsinventory:
       --print-regions        prints the available AWS regions
   -r, --regions strings      regions to gather data from
   -s, --services strings     services to gather data from (default [ebs,ec2,elb,iam,rds,s3])
+  -v, --version              prints the version information
 ```
 
 ## Development
