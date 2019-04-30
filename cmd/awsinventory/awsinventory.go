@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/manywho/awsinventory/internal/data"
@@ -14,6 +15,9 @@ var (
 	regions, services []string
 	logLevel          string
 	printRegions      bool
+	printVersion      bool
+
+	version, build string
 )
 
 func init() {
@@ -22,12 +26,18 @@ func init() {
 	pflag.StringSliceVarP(&services, "services", "s", data.ValidServices, "services to gather data from")
 	pflag.BoolVar(&printRegions, "print-regions", false, "prints the available AWS regions")
 	pflag.StringVarP(&logLevel, "log-level", "l", "warning", "set the level of log output")
+	pflag.BoolVarP(&printVersion, "version", "v", false, "prints the version information")
 	pflag.Parse()
 
 	if printRegions {
 		for _, r := range data.ValidRegions {
 			println(r)
 		}
+		os.Exit(0)
+	}
+
+	if printVersion {
+		fmt.Printf("awsinventory %s+%s\n", version, build)
 		os.Exit(0)
 	}
 
