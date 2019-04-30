@@ -13,14 +13,23 @@ var (
 	outputFile        string
 	regions, services []string
 	logLevel          string
+	printRegions      bool
 )
 
 func init() {
 	pflag.StringVarP(&outputFile, "output-file", "o", "inventory.csv", "path to the output file")
 	pflag.StringSliceVarP(&regions, "regions", "r", []string{}, "regions to gather data from")
 	pflag.StringSliceVarP(&services, "services", "s", data.ValidServices, "services to gather data from")
+	pflag.BoolVar(&printRegions, "print-regions", false, "prints the available AWS regions")
 	pflag.StringVarP(&logLevel, "log-level", "l", "warning", "set the level of log output")
 	pflag.Parse()
+
+	if printRegions {
+		for _, r := range data.ValidRegions {
+			println(r)
+		}
+		os.Exit(0)
+	}
 
 	initLogger()
 }
