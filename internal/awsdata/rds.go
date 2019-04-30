@@ -18,7 +18,7 @@ const (
 	ServiceRDS string = "rds"
 )
 
-func (d *Data) loadRDSInstances(rdsSvc rdsiface.RDSAPI, region string) {
+func (d *AWSData) loadRDSInstances(rdsSvc rdsiface.RDSAPI, region string) {
 	log := d.log.WithFields(logrus.Fields{
 		"region":  region,
 		"service": ServiceRDS,

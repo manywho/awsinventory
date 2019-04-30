@@ -16,7 +16,7 @@ const (
 	ServiceIAM string = "iam"
 )
 
-func (d *Data) loadIAMUsers(iamSvc iamiface.IAMAPI) {
+func (d *AWSData) loadIAMUsers(iamSvc iamiface.IAMAPI) {
 	log := d.log.WithFields(logrus.Fields{
 		"region":  "global",
 		"service": ServiceIAM,

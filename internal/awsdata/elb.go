@@ -16,7 +16,7 @@ const (
 	ServiceELB string = "elb"
 )
 
-func (d *Data) loadELBs(elbSvc elbiface.ELBAPI, region string) {
+func (d *AWSData) loadELBs(elbSvc elbiface.ELBAPI, region string) {
 	log := d.log.WithFields(logrus.Fields{
 		"region":  region,
 		"service": ServiceELB,

@@ -18,7 +18,7 @@ const (
 	ServiceEC2 string = "ec2"
 )
 
-func (d *Data) loadEC2Instances(ec2Svc ec2iface.EC2API, region string) {
+func (d *AWSData) loadEC2Instances(ec2Svc ec2iface.EC2API, region string) {
 	log := d.log.WithFields(logrus.Fields{
 		"region":  region,
 		"service": ServiceEC2,

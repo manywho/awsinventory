@@ -48,8 +48,8 @@ type result struct {
 	Err error
 }
 
-// Data is responsible for concurrently loading data from AWS and storing it based on the regions and services provided
-type Data struct {
+// AWSData is responsible for concurrently loading data from AWS and storing it based on the regions and services provided
+type AWSData struct {
 	clients Clients
 	rows    []inventory.Row
 	results chan result
@@ -59,13 +59,13 @@ type Data struct {
 	wg      sync.WaitGroup
 }
 
-// New returns a new empty Data
-func New(logger *logrus.Logger, clients Clients) *Data {
+// New returns a new empty AWSData
+func New(logger *logrus.Logger, clients Clients) *AWSData {
 	if clients == nil {
 		clients = DefaultClients{}
 	}
 
-	return &Data{
+	return &AWSData{
 		clients: clients,
 		rows:    make([]inventory.Row, 0),
 		results: make(chan result),
@@ -76,7 +76,7 @@ func New(logger *logrus.Logger, clients Clients) *Data {
 }
 
 // Load concurrently loads the required data based of the of regions and services provided
-func (d *Data) Load(regions, services []string) {
+func (d *AWSData) Load(regions, services []string) {
 	if len(services) == 0 {
 		d.log.Error(ErrNoServices)
 		return
@@ -136,7 +136,7 @@ func (d *Data) Load(regions, services []string) {
 	close(d.results)
 }
 
-func (d *Data) startWorker() {
+func (d *AWSData) startWorker() {
 	d.log.Info("starting worker")
 	for {
 		res, ok := <-d.results
@@ -153,7 +153,7 @@ func (d *Data) startWorker() {
 	}
 }
 
-func (d *Data) appendRow(row inventory.Row) {
+func (d *AWSData) appendRow(row inventory.Row) {
 	d.lock.Lock()
 	d.rows = append(d.rows, row)
 	d.lock.Unlock()

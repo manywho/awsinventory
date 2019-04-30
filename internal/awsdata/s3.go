@@ -16,7 +16,7 @@ const (
 	ServiceS3 string = "s3"
 )
 
-func (d *Data) loadS3Buckets(s3Svc s3iface.S3API) {
+func (d *AWSData) loadS3Buckets(s3Svc s3iface.S3API) {
 	log := d.log.WithFields(logrus.Fields{
 		"region":  "global",
 		"service": ServiceS3,
