@@ -5,7 +5,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -18,7 +17,9 @@ const (
 	ServiceRDS string = "rds"
 )
 
-func (d *AWSData) loadRDSInstances(rdsSvc rdsiface.RDSAPI, region string) {
+func (d *AWSData) loadRDSInstances(region string) {
+	rdsSvc := d.clients.GetRDSClient(region)
+
 	log := d.log.WithFields(logrus.Fields{
 		"region":  region,
 		"service": ServiceRDS,

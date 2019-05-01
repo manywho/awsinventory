@@ -3,7 +3,6 @@ package awsdata
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -16,7 +15,9 @@ const (
 	ServiceELB string = "elb"
 )
 
-func (d *AWSData) loadELBs(elbSvc elbiface.ELBAPI, region string) {
+func (d *AWSData) loadELBs(region string) {
+	elbSvc := d.clients.GetELBClient(region)
+
 	log := d.log.WithFields(logrus.Fields{
 		"region":  region,
 		"service": ServiceELB,

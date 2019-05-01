@@ -3,7 +3,6 @@ package awsdata
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -16,7 +15,9 @@ const (
 	ServiceS3 string = "s3"
 )
 
-func (d *AWSData) loadS3Buckets(s3Svc s3iface.S3API) {
+func (d *AWSData) loadS3Buckets() {
+	s3Svc := d.clients.GetS3Client(ValidRegions[0])
+
 	log := d.log.WithFields(logrus.Fields{
 		"region":  "global",
 		"service": ServiceS3,

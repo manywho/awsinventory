@@ -101,31 +101,31 @@ func (d *AWSData) Load(regions, services []string) {
 
 	// Global services
 	if stringInSlice(ServiceIAM, services) {
-		go d.loadIAMUsers(d.clients.GetIAMClient(ValidRegions[0]))
+		go d.loadIAMUsers()
 	}
 
 	if stringInSlice(ServiceS3, services) {
-		go d.loadS3Buckets(d.clients.GetS3Client(ValidRegions[0]))
+		go d.loadS3Buckets()
 	}
 
 	// Regional Services
 	for _, region := range regions {
 
 		if stringInSlice(ServiceEC2, services) {
-			go d.loadEC2Instances(d.clients.GetEC2Client(region), region)
+			go d.loadEC2Instances(region)
 		}
 
 		if stringInSlice(ServiceEBS, services) {
 			// EBS volumes are part of the EC2 api and therefore require an EC2 client
-			go d.loadEBSVolumes(d.clients.GetEC2Client(region), region)
+			go d.loadEBSVolumes(region)
 		}
 
 		if stringInSlice(ServiceELB, services) {
-			go d.loadELBs(d.clients.GetELBClient(region), region)
+			go d.loadELBs(region)
 		}
 
 		if stringInSlice(ServiceRDS, services) {
-			go d.loadRDSInstances(d.clients.GetRDSClient(region), region)
+			go d.loadRDSInstances(region)
 		}
 	}
 

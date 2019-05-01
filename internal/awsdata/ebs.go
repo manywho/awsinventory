@@ -5,7 +5,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -18,7 +17,9 @@ const (
 	ServiceEBS string = "ebs"
 )
 
-func (d *AWSData) loadEBSVolumes(ec2Svc ec2iface.EC2API, region string) {
+func (d *AWSData) loadEBSVolumes(region string) {
+	ec2Svc := d.clients.GetEC2Client(region)
+
 	log := d.log.WithFields(logrus.Fields{
 		"region":  region,
 		"service": ServiceEBS,

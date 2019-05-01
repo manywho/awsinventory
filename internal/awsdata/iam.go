@@ -3,7 +3,6 @@ package awsdata
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -16,7 +15,9 @@ const (
 	ServiceIAM string = "iam"
 )
 
-func (d *AWSData) loadIAMUsers(iamSvc iamiface.IAMAPI) {
+func (d *AWSData) loadIAMUsers() {
+	iamSvc := d.clients.GetIAMClient(ValidRegions[0])
+
 	log := d.log.WithFields(logrus.Fields{
 		"region":  "global",
 		"service": ServiceIAM,
