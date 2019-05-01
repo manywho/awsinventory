@@ -60,8 +60,9 @@ func (d *AWSData) loadEC2Instances(region string) {
 					UniqueAssetIdentifier: aws.StringValue(i.InstanceId),
 					IPv4orIPv6Address:     strings.Join(ips, "\n"),
 					Virtual:               true,
-					Public:                aws.StringValue(i.PublicIpAddress) != "",
-					// TODO DNSNameOrURL
+					// TODO find a better way of checking if the instance is publicly accessible
+					Public:                    aws.StringValue(i.PublicIpAddress) != "",
+					DNSNameOrURL:              strings.Join(d.route53Cache.FindRecordsForInstance(i), "\n"),
 					MACAddress:                strings.Join(macAddresses, "\n"),
 					BaselineConfigurationName: aws.StringValue(i.ImageId),
 					Location:                  region,

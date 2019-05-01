@@ -68,7 +68,7 @@ func (e IAMErrorMock) ListUsers(cfg *iam.ListUsersInput) (*iam.ListUsersOutput, 
 func TestCanLoadIAMUsers(t *testing.T) {
 	d := New(logrus.New(), TestClients{IAM: IAMMock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceIAM})
+	d.Load([]string{}, []string{ServiceIAM})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {

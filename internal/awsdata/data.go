@@ -4,7 +4,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/route53"
+
 	"github.com/manywho/awsinventory/internal/inventory"
+	"github.com/manywho/awsinventory/pkg/route53cache"
 	"github.com/sirupsen/logrus"
 )
 
@@ -50,13 +53,14 @@ type result struct {
 
 // AWSData is responsible for concurrently loading data from AWS and storing it based on the regions and services provided
 type AWSData struct {
-	clients Clients
-	rows    []inventory.Row
-	results chan result
-	regions []string
-	log     *logrus.Logger
-	lock    sync.Mutex
-	wg      sync.WaitGroup
+	clients      Clients
+	rows         []inventory.Row
+	results      chan result
+	regions      []string
+	route53Cache *route53cache.Cache
+	log          *logrus.Logger
+	lock         sync.Mutex
+	wg           sync.WaitGroup
 }
 
 // New returns a new empty AWSData
@@ -95,6 +99,26 @@ func (d *AWSData) Load(regions, services []string) {
 	if err := validateServices(services); err != nil {
 		d.log.Error(err)
 		return
+	}
+
+	if stringInSlice(ServiceEC2, services) {
+		r53 := d.clients.GetRoute53Client(ValidRegions[0])
+		zones, err := r53.ListHostedZones(&route53.ListHostedZonesInput{})
+		if err != nil {
+			d.log.Fatal(err)
+		}
+		var sets []*route53.ResourceRecordSet
+		for _, z := range zones.HostedZones {
+			out, err := r53.ListResourceRecordSets(&route53.ListResourceRecordSetsInput{
+				HostedZoneId: z.Id,
+			})
+			if err != nil {
+				d.log.Fatal(err)
+			}
+			sets = append(sets, out.ResourceRecordSets...)
+		}
+
+		d.route53Cache = route53cache.New(sets)
 	}
 
 	go d.startWorker()

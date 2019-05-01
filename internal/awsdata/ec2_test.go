@@ -6,6 +6,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/sirupsen/logrus"
 	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/require"
@@ -20,6 +22,7 @@ var testEC2InstanceRows = []inventory.Row{
 		IPv4orIPv6Address:         "203.0.113.10\n10.0.1.2\n10.0.2.2",
 		Virtual:                   true,
 		Public:                    true,
+		DNSNameOrURL:              "test.mydomain.com",
 		BaselineConfigurationName: "ami-12345678",
 		Location:                  ValidRegions[0],
 		AssetType:                 AssetTypeEC2Instance,
@@ -55,6 +58,27 @@ var testEC2InstanceRows = []inventory.Row{
 }
 
 // Test Data
+var testEC2Route53HostedZonesOutput = &route53.ListHostedZonesOutput{
+	HostedZones: []*route53.HostedZone{
+		{
+			Id: aws.String("ABCDEFGH"),
+		},
+	},
+}
+var testEC2Route53RecordSetsOutput = &route53.ListResourceRecordSetsOutput{
+	ResourceRecordSets: []*route53.ResourceRecordSet{
+		&route53.ResourceRecordSet{
+			Type: aws.String("A"),
+			Name: aws.String(testEC2InstanceRows[0].DNSNameOrURL),
+			ResourceRecords: []*route53.ResourceRecord{
+				{
+					Value: testEC2InstanceOutput.Reservations[0].Instances[0].PublicIpAddress,
+				},
+			},
+		},
+	},
+}
+
 var testEC2InstanceOutput = &ec2.DescribeInstancesOutput{
 	Reservations: []*ec2.Reservation{
 		{
@@ -146,6 +170,18 @@ func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.Descri
 	return testEC2InstanceOutput, nil
 }
 
+type EC2Route53Mock struct {
+	route53iface.Route53API
+}
+
+func (e EC2Route53Mock) ListHostedZones(cfg *route53.ListHostedZonesInput) (*route53.ListHostedZonesOutput, error) {
+	return testEC2Route53HostedZonesOutput, nil
+}
+
+func (e EC2Route53Mock) ListResourceRecordSets(cfg *route53.ListResourceRecordSetsInput) (*route53.ListResourceRecordSetsOutput, error) {
+	return testEC2Route53RecordSetsOutput, nil
+}
+
 type EC2ErrorMock struct {
 	ec2iface.EC2API
 }
@@ -156,7 +192,7 @@ func (e EC2ErrorMock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.D
 
 // Tests
 func TestCanLoadEC2Instances(t *testing.T) {
-	d := New(logrus.New(), TestClients{EC2: EC2Mock{}})
+	d := New(logrus.New(), TestClients{EC2: EC2Mock{}, Route53: EC2Route53Mock{}})
 
 	d.Load([]string{ValidRegions[0]}, []string{ServiceEC2})
 
@@ -172,7 +208,7 @@ func TestCanLoadEC2Instances(t *testing.T) {
 func TestLoadEC2InstancesLogsError(t *testing.T) {
 	logger, hook := logrustest.NewNullLogger()
 
-	d := New(logger, TestClients{EC2: EC2ErrorMock{}})
+	d := New(logger, TestClients{EC2: EC2ErrorMock{}, Route53: EC2Route53Mock{}})
 
 	d.Load([]string{ValidRegions[0]}, []string{"ec2"})
 
