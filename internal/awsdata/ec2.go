@@ -55,6 +55,16 @@ func (d *AWSData) loadEC2Instances(region string) {
 				macAddresses = append(macAddresses, aws.StringValue(networkInterface.MacAddress))
 			}
 
+			var amiName string
+			images, err := ec2Svc.DescribeImages(&ec2.DescribeImagesInput{ImageIds: []*string{
+				i.ImageId,
+			}})
+			if err != nil {
+				d.results <- result{Err: err}
+			} else if len(images.Images) > 0 {
+				amiName = aws.StringValue(images.Images[0].Name)
+			}
+
 			d.results <- result{
 				Row: inventory.Row{
 					UniqueAssetIdentifier: aws.StringValue(i.InstanceId),
@@ -65,6 +75,7 @@ func (d *AWSData) loadEC2Instances(region string) {
 					DNSNameOrURL:              strings.Join(d.route53Cache.FindRecordsForInstance(i), "\n"),
 					MACAddress:                strings.Join(macAddresses, "\n"),
 					BaselineConfigurationName: aws.StringValue(i.ImageId),
+					OSNameAndVersion:          amiName,
 					Location:                  region,
 					AssetType:                 AssetTypeEC2Instance,
 					HardwareMakeModel:         aws.StringValue(i.InstanceType),

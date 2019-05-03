@@ -11,7 +11,7 @@ type Row struct {
 	MACAddress                     string
 	AuthenticatedScan              bool
 	BaselineConfigurationName      string
-	OSNameandVersion               string
+	OSNameAndVersion               string
 	Location                       string
 	AssetType                      string
 	HardwareMakeModel              string
@@ -40,7 +40,7 @@ func (r Row) StringSlice() []string {
 	record = append(record, r.MACAddress)
 	record = append(record, getBoolString(r.AuthenticatedScan))
 	record = append(record, r.BaselineConfigurationName)
-	record = append(record, r.OSNameandVersion)
+	record = append(record, r.OSNameAndVersion)
 	record = append(record, r.Location)
 	record = append(record, r.AssetType)
 	record = append(record, r.HardwareMakeModel)

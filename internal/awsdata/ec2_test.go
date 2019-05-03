@@ -24,6 +24,7 @@ var testEC2InstanceRows = []inventory.Row{
 		Public:                    true,
 		DNSNameOrURL:              "test.mydomain.com",
 		BaselineConfigurationName: "ami-12345678",
+		OSNameAndVersion:          "debian-stretch-2019-01-01",
 		Location:                  ValidRegions[0],
 		AssetType:                 AssetTypeEC2Instance,
 		MACAddress:                "00:00:00:00:00:00\n11:11:11:11:11:11",
@@ -37,6 +38,7 @@ var testEC2InstanceRows = []inventory.Row{
 		Virtual:                   true,
 		Public:                    false,
 		BaselineConfigurationName: "ami-abcdefgh",
+		OSNameAndVersion:          "ubuntu-trusty-2019-01-01",
 		Location:                  ValidRegions[0],
 		AssetType:                 AssetTypeEC2Instance,
 		HardwareMakeModel:         "t2.medium",
@@ -49,6 +51,7 @@ var testEC2InstanceRows = []inventory.Row{
 		Virtual:                   true,
 		Public:                    false,
 		BaselineConfigurationName: "ami-a1b2c3d4",
+		OSNameAndVersion:          "ubuntu-xenial-2019-01-01",
 		Location:                  ValidRegions[0],
 		AssetType:                 AssetTypeEC2Instance,
 		HardwareMakeModel:         "t2.small",
@@ -161,6 +164,14 @@ var testEC2InstanceOutput = &ec2.DescribeInstancesOutput{
 	},
 }
 
+var testEC2ImageOutput = &ec2.DescribeImagesOutput{
+	Images: []*ec2.Image{
+		{
+			Name: aws.String(testEC2InstanceRows[0].OSNameAndVersion),
+		},
+	},
+}
+
 // Mocks
 type EC2Mock struct {
 	ec2iface.EC2API
@@ -168,6 +179,25 @@ type EC2Mock struct {
 
 func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return testEC2InstanceOutput, nil
+}
+
+func (e EC2Mock) DescribeImages(cfg *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
+	var name string
+	switch aws.StringValue(cfg.ImageIds[0]) {
+	case testEC2InstanceRows[0].BaselineConfigurationName:
+		name = testEC2InstanceRows[0].OSNameAndVersion
+	case testEC2InstanceRows[1].BaselineConfigurationName:
+		name = testEC2InstanceRows[1].OSNameAndVersion
+	case testEC2InstanceRows[2].BaselineConfigurationName:
+		name = testEC2InstanceRows[2].OSNameAndVersion
+	}
+	return &ec2.DescribeImagesOutput{
+		Images: []*ec2.Image{
+			{
+				Name: aws.String(name),
+			},
+		},
+	}, nil
 }
 
 type EC2Route53Mock struct {
@@ -210,7 +240,7 @@ func TestLoadEC2InstancesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{EC2: EC2ErrorMock{}, Route53: EC2Route53Mock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{"ec2"})
+	d.Load([]string{ValidRegions[0]}, []string{ServiceEC2})
 
 	require.Contains(t, hook.LastEntry().Message, testError.Error())
 }
