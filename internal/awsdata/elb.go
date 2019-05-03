@@ -16,14 +16,14 @@ const (
 )
 
 func (d *AWSData) loadELBs(region string) {
+	defer d.wg.Done()
+
 	elbSvc := d.clients.GetELBClient(region)
 
 	log := d.log.WithFields(logrus.Fields{
 		"region":  region,
 		"service": ServiceELB,
 	})
-	d.wg.Add(1)
-	defer d.wg.Done()
 	log.Info("loading data")
 	out, err := elbSvc.DescribeLoadBalancers(&elb.DescribeLoadBalancersInput{})
 	if err != nil {

@@ -18,14 +18,14 @@ const (
 )
 
 func (d *AWSData) loadEBSVolumes(region string) {
+	defer d.wg.Done()
+
 	ec2Svc := d.clients.GetEC2Client(region)
 
 	log := d.log.WithFields(logrus.Fields{
 		"region":  region,
 		"service": ServiceEBS,
 	})
-	d.wg.Add(1)
-	defer d.wg.Done()
 	log.Info("loading data")
 	out, err := ec2Svc.DescribeVolumes(&ec2.DescribeVolumesInput{})
 	if err != nil {

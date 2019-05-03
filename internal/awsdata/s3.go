@@ -16,14 +16,14 @@ const (
 )
 
 func (d *AWSData) loadS3Buckets() {
+	defer d.wg.Done()
+
 	s3Svc := d.clients.GetS3Client(ValidRegions[0])
 
 	log := d.log.WithFields(logrus.Fields{
 		"region":  "global",
 		"service": ServiceS3,
 	})
-	d.wg.Add(1)
-	defer d.wg.Done()
 	log.Info("loading data")
 	out, err := s3Svc.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {

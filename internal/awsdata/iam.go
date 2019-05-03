@@ -16,14 +16,14 @@ const (
 )
 
 func (d *AWSData) loadIAMUsers() {
+	defer d.wg.Done()
+
 	iamSvc := d.clients.GetIAMClient(ValidRegions[0])
 
 	log := d.log.WithFields(logrus.Fields{
 		"region":  "global",
 		"service": ServiceIAM,
 	})
-	d.wg.Add(1)
-	defer d.wg.Done()
 	log.Info("loading data")
 	out, err := iamSvc.ListUsers(&iam.ListUsersInput{})
 	if err != nil {

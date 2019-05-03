@@ -228,8 +228,20 @@ func TestCanLoadEC2Instances(t *testing.T) {
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
-		require.Equal(t, testEC2InstanceRows[count], row)
 		count++
+		switch row.UniqueAssetIdentifier {
+		case testEC2InstanceRows[0].UniqueAssetIdentifier:
+			require.Equal(t, testEC2InstanceRows[0], row)
+			break
+		case testEC2InstanceRows[1].UniqueAssetIdentifier:
+			require.Equal(t, testEC2InstanceRows[1], row)
+			break
+		case testEC2InstanceRows[2].UniqueAssetIdentifier:
+			require.Equal(t, testEC2InstanceRows[2], row)
+			break
+		default:
+			t.Error("unexpected row")
+		}
 		return nil
 	})
 	require.Equal(t, 3, count)

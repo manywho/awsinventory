@@ -18,14 +18,14 @@ const (
 )
 
 func (d *AWSData) loadRDSInstances(region string) {
+	defer d.wg.Done()
+
 	rdsSvc := d.clients.GetRDSClient(region)
 
 	log := d.log.WithFields(logrus.Fields{
 		"region":  region,
 		"service": ServiceRDS,
 	})
-	d.wg.Add(1)
-	defer d.wg.Done()
 	log.Info("loading data")
 	out, err := rdsSvc.DescribeDBInstances(&rds.DescribeDBInstancesInput{})
 	if err != nil {

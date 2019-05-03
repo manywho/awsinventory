@@ -2,8 +2,8 @@ package awsdata
 
 import (
 	"sync"
-	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 
 	"github.com/manywho/awsinventory/internal/inventory"
@@ -56,6 +56,7 @@ type AWSData struct {
 	clients      Clients
 	rows         []inventory.Row
 	results      chan result
+	done         chan bool
 	regions      []string
 	route53Cache *route53cache.Cache
 	log          *logrus.Logger
@@ -73,6 +74,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 		clients: clients,
 		rows:    make([]inventory.Row, 0),
 		results: make(chan result),
+		done:    make(chan bool, 1),
 		log:     logger,
 		lock:    sync.Mutex{},
 		wg:      sync.WaitGroup{},
@@ -102,33 +104,19 @@ func (d *AWSData) Load(regions, services []string) {
 	}
 
 	if stringInSlice(ServiceEC2, services) {
-		r53 := d.clients.GetRoute53Client(ValidRegions[0])
-		zones, err := r53.ListHostedZones(&route53.ListHostedZonesInput{})
-		if err != nil {
-			d.log.Fatal(err)
-		}
-		var sets []*route53.ResourceRecordSet
-		for _, z := range zones.HostedZones {
-			out, err := r53.ListResourceRecordSets(&route53.ListResourceRecordSetsInput{
-				HostedZoneId: z.Id,
-			})
-			if err != nil {
-				d.log.Fatal(err)
-			}
-			sets = append(sets, out.ResourceRecordSets...)
-		}
-
-		d.route53Cache = route53cache.New(sets)
+		d.loadRoute53Data()
 	}
 
 	go d.startWorker()
 
 	// Global services
 	if stringInSlice(ServiceIAM, services) {
+		d.wg.Add(1)
 		go d.loadIAMUsers()
 	}
 
 	if stringInSlice(ServiceS3, services) {
+		d.wg.Add(1)
 		go d.loadS3Buckets()
 	}
 
@@ -136,35 +124,39 @@ func (d *AWSData) Load(regions, services []string) {
 	for _, region := range regions {
 
 		if stringInSlice(ServiceEC2, services) {
+			d.wg.Add(1)
 			go d.loadEC2Instances(region)
 		}
 
 		if stringInSlice(ServiceEBS, services) {
-			// EBS volumes are part of the EC2 api and therefore require an EC2 client
+			d.wg.Add(1)
 			go d.loadEBSVolumes(region)
 		}
 
 		if stringInSlice(ServiceELB, services) {
+			d.wg.Add(1)
 			go d.loadELBs(region)
 		}
 
 		if stringInSlice(ServiceRDS, services) {
+			d.wg.Add(1)
 			go d.loadRDSInstances(region)
 		}
 	}
 
-	// Delay to give the first wg.Add call time to complete
-	time.Sleep(100 * time.Millisecond)
-
 	d.wg.Wait()
 	close(d.results)
+
+	<-d.done
 }
 
 func (d *AWSData) startWorker() {
 	d.log.Info("starting worker")
 	for {
 		res, ok := <-d.results
-		if !ok {
+		var blankResult result
+		if res == blankResult && !ok {
+			d.done <- true
 			return
 		}
 		if res.Err != nil {
@@ -175,6 +167,43 @@ func (d *AWSData) startWorker() {
 			d.appendRow(res.Row)
 		}
 	}
+}
+
+func (d *AWSData) loadRoute53Data() {
+	d.log.Info("loading route53 data")
+	r53 := d.clients.GetRoute53Client(ValidRegions[0])
+	zones, err := r53.ListHostedZones(&route53.ListHostedZonesInput{})
+	if err != nil {
+		d.log.Fatal(err)
+	}
+	var sets []*route53.ResourceRecordSet
+
+	var lock sync.Mutex
+	var wg sync.WaitGroup
+	for _, z := range zones.HostedZones {
+		wg.Add(1)
+		go func(zone *route53.HostedZone) {
+			d.log.Debugf("loading route53 records for hosted zone %s", aws.StringValue(zone.Name))
+
+			r53Client := d.clients.GetRoute53Client(ValidRegions[0])
+
+			out, err := r53Client.ListResourceRecordSets(&route53.ListResourceRecordSetsInput{
+				HostedZoneId: zone.Id,
+			})
+			if err != nil {
+				d.log.Fatal(err)
+			}
+
+			lock.Lock()
+			sets = append(sets, out.ResourceRecordSets...)
+			lock.Unlock()
+			wg.Done()
+		}(z)
+	}
+
+	wg.Wait()
+
+	d.route53Cache = route53cache.New(sets)
 }
 
 func (d *AWSData) appendRow(row inventory.Row) {
