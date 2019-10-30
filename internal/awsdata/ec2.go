@@ -27,7 +27,16 @@ func (d *AWSData) loadEC2Instances(region string) {
 		"service": ServiceEC2,
 	})
 	log.Info("loading instance data")
-	out, err := ec2Svc.DescribeInstances(&ec2.DescribeInstancesInput{})
+	out, err := ec2Svc.DescribeInstances(&ec2.DescribeInstancesInput{
+		Filters: []*ec2.Filter{
+			{
+				Name: aws.String("instance-state-name"),
+				Values: []*string{
+					aws.String("running"),
+				},
+			},
+		},
+	})
 	if err != nil {
 		d.results <- result{Err: err}
 		return
