@@ -33,6 +33,8 @@ func (d *AWSData) loadEC2Instances(region string) {
 				Name: aws.String("instance-state-name"),
 				Values: []*string{
 					aws.String("running"),
+					aws.String("stopping"),
+					aws.String("stopped"),
 				},
 			},
 		},
