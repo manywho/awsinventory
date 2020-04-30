@@ -3,7 +3,7 @@ module github.com/manywho/awsinventory
 go 1.12
 
 require (
-	github.com/aws/aws-sdk-go v1.19.17
+	github.com/aws/aws-sdk-go v1.30.17
 	github.com/sirupsen/logrus v1.4.1
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.2.2
