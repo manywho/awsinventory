@@ -18,6 +18,7 @@ var testELBRows = []inventory.Row{
 	{
 		UniqueAssetIdentifier: "abcdefgh12345678",
 		Virtual:               true,
+		Public:                true,
 		DNSNameOrURL:          "abcdefgh12345678.ValidRegions[0].elb.amazonaws.com",
 		Location:              ValidRegions[0],
 		AssetType:             AssetTypeELB,
@@ -27,6 +28,7 @@ var testELBRows = []inventory.Row{
 	{
 		UniqueAssetIdentifier: "12345678abcdefgh",
 		Virtual:               true,
+		Public:                true,
 		DNSNameOrURL:          "12345678abcdefgh.ValidRegions[0].elb.amazonaws.com",
 		Location:              ValidRegions[0],
 		AssetType:             AssetTypeELB,
@@ -36,6 +38,7 @@ var testELBRows = []inventory.Row{
 	{
 		UniqueAssetIdentifier: "a1b2c3d4e5f6g7h8",
 		Virtual:               true,
+		Public:                false,
 		DNSNameOrURL:          "a1b2c3d4e5f6g7h8.ValidRegions[0].elb.amazonaws.com",
 		Location:              ValidRegions[0],
 		AssetType:             AssetTypeELB,
@@ -51,18 +54,21 @@ var testELBOutput = &elb.DescribeLoadBalancersOutput{
 			LoadBalancerName:        aws.String(testELBRows[0].UniqueAssetIdentifier),
 			CanonicalHostedZoneName: aws.String(testELBRows[0].Function),
 			DNSName:                 aws.String(testELBRows[0].DNSNameOrURL),
+			Scheme:                  aws.String("internet-facing"),
 			VPCId:                   aws.String(testELBRows[0].VLANNetworkID),
 		},
 		{
 			LoadBalancerName:        aws.String(testELBRows[1].UniqueAssetIdentifier),
 			CanonicalHostedZoneName: aws.String(testELBRows[1].Function),
 			DNSName:                 aws.String(testELBRows[1].DNSNameOrURL),
+			Scheme:                  aws.String("internet-facing"),
 			VPCId:                   aws.String(testELBRows[1].VLANNetworkID),
 		},
 		{
 			LoadBalancerName:        aws.String(testELBRows[2].UniqueAssetIdentifier),
 			CanonicalHostedZoneName: aws.String(testELBRows[2].Function),
 			DNSName:                 aws.String(testELBRows[2].DNSNameOrURL),
+			Scheme:                  aws.String("internal"),
 			VPCId:                   aws.String(testELBRows[2].VLANNetworkID),
 		},
 	},

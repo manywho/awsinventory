@@ -18,6 +18,8 @@ var (
 		"us-east-1",
 		"us-west-1",
 		"us-west-2",
+		"af-south-1",
+		"ap-east-1",
 		"ap-south-1",
 		"ap-northeast-3",
 		"ap-northeast-2",
@@ -30,9 +32,13 @@ var (
 		"eu-central-1",
 		"eu-west-1",
 		"eu-west-2",
+		"eu-south-1",
 		"eu-west-3",
 		"eu-north-1",
+		"me-south-1",
 		"sa-east-1",
+		"us-gov-east-1",
+		"us-gov-west-1",
 	}
 
 	// ValidServices contains a list of valid AWS services to gather data from
@@ -40,6 +46,7 @@ var (
 		ServiceEBS,
 		ServiceEC2,
 		ServiceELB,
+		ServiceELBV2,
 		ServiceIAM,
 		ServiceRDS,
 		ServiceS3,
@@ -138,6 +145,11 @@ func (d *AWSData) Load(regions, services []string) {
 			go d.loadELBs(region)
 		}
 
+		if stringInSlice(ServiceELBV2, services) {
+			d.wg.Add(1)
+			go d.loadELBV2s(region)
+		}
+
 		if stringInSlice(ServiceRDS, services) {
 			d.wg.Add(1)
 			go d.loadRDSInstances(region)
@@ -224,7 +236,7 @@ func stringInSlice(needle string, haystack []string) bool {
 
 func hasRegionalServices(services []string) bool {
 	for _, service := range services {
-		if service == ServiceEBS || service == ServiceEC2 || service == ServiceELB {
+		if service == ServiceEBS || service == ServiceEC2 || service == ServiceELB || service == ServiceELBV2 {
 			return true
 		}
 	}
