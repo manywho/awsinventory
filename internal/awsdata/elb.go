@@ -33,10 +33,18 @@ func (d *AWSData) loadELBs(region string) {
 
 	log.Info("processing data")
 	for _, l := range out.LoadBalancerDescriptions {
+		var public bool
+		if aws.StringValue(l.Scheme) == "internet-facing" {
+			public = true
+		} else if aws.StringValue(l.Scheme) == "internal" {
+			public = false
+		}
+
 		d.results <- result{
 			Row: inventory.Row{
 				UniqueAssetIdentifier: aws.StringValue(l.LoadBalancerName),
 				Virtual:               true,
+				Public:                public,
 				DNSNameOrURL:          aws.StringValue(l.DNSName),
 				Location:              region,
 				AssetType:             AssetTypeELB,

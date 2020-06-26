@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
+	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
@@ -16,6 +17,7 @@ var testError = errors.New("test aws error")
 type TestClients struct {
 	EC2     ec2iface.EC2API
 	ELB     elbiface.ELBAPI
+	ELBV2   elbv2iface.ELBV2API
 	IAM     iamiface.IAMAPI
 	RDS     rdsiface.RDSAPI
 	Route53 route53iface.Route53API
@@ -32,6 +34,10 @@ func (c TestClients) GetIAMClient(region string) iamiface.IAMAPI {
 
 func (c TestClients) GetELBClient(region string) elbiface.ELBAPI {
 	return c.ELB
+}
+
+func (c TestClients) GetELBV2Client(region string) elbv2iface.ELBV2API {
+	return c.ELBV2
 }
 
 func (c TestClients) GetRDSClient(region string) rdsiface.RDSAPI {
