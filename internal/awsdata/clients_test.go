@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/elasticache/elasticacheiface"
 	"github.com/aws/aws-sdk-go/service/elasticsearchservice/elasticsearchserviceiface"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
@@ -17,6 +18,7 @@ var testError = errors.New("test aws error")
 
 type TestClients struct {
 	EC2                  ec2iface.EC2API
+	ElastiCache          elasticacheiface.ElastiCacheAPI
 	ElasticsearchService elasticsearchserviceiface.ElasticsearchServiceAPI
 	ELB                  elbiface.ELBAPI
 	ELBV2                elbv2iface.ELBV2API
@@ -30,8 +32,8 @@ func (c TestClients) GetEC2Client(region string) ec2iface.EC2API {
 	return c.EC2
 }
 
-func (c TestClients) GetIAMClient(region string) iamiface.IAMAPI {
-	return c.IAM
+func (c TestClients) GetElastiCacheClient(region string) elasticacheiface.ElastiCacheAPI {
+	return c.ElastiCache
 }
 
 func (c TestClients) GetElasticsearchServiceClient(region string) elasticsearchserviceiface.ElasticsearchServiceAPI {
@@ -44,6 +46,10 @@ func (c TestClients) GetELBClient(region string) elbiface.ELBAPI {
 
 func (c TestClients) GetELBV2Client(region string) elbv2iface.ELBV2API {
 	return c.ELBV2
+}
+
+func (c TestClients) GetIAMClient(region string) iamiface.IAMAPI {
+	return c.IAM
 }
 
 func (c TestClients) GetRDSClient(region string) rdsiface.RDSAPI {
