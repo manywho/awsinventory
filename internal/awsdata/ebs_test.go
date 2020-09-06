@@ -17,20 +17,20 @@ import (
 var testEBSVolumeRows = []inventory.Row{
 	{
 		UniqueAssetIdentifier: "vol-12345678",
-		Location:              ValidRegions[0] + "-1a",
+		Location:              DefaultRegion + "-1a",
 		AssetType:             AssetTypeEBSVolume,
 		HardwareMakeModel:     "gp2 (100GB)",
 		Function:              "test app 1",
 	},
 	{
 		UniqueAssetIdentifier: "vol-abcdefgh",
-		Location:              ValidRegions[0] + "-1b",
+		Location:              DefaultRegion + "-1b",
 		AssetType:             AssetTypeEBSVolume,
 		HardwareMakeModel:     "gp2 (50GB)",
 	},
 	{
 		UniqueAssetIdentifier: "vol-a1b2c3d4",
-		Location:              ValidRegions[0] + "-1c",
+		Location:              DefaultRegion + "-1c",
 		AssetType:             AssetTypeEBSVolume,
 		HardwareMakeModel:     "gp2 (20GB)",
 	},
@@ -93,7 +93,7 @@ func (e EBSErrorMock) DescribeVolumes(cfg *ec2.DescribeVolumesInput) (*ec2.Descr
 func TestCanLoadEBSVolumes(t *testing.T) {
 	d := New(logrus.New(), TestClients{EC2: EBSMock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceEBS})
+	d.Load([]string{DefaultRegion}, []string{ServiceEBS})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
@@ -109,7 +109,7 @@ func TestLoadEBSVolumesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{EC2: EBSErrorMock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceEBS})
+	d.Load([]string{DefaultRegion}, []string{ServiceEBS})
 
 	require.Contains(t, hook.LastEntry().Message, testError.Error())
 }

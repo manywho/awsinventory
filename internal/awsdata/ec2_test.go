@@ -25,7 +25,7 @@ var testEC2InstanceRows = []inventory.Row{
 		DNSNameOrURL:              "test.mydomain.com",
 		BaselineConfigurationName: "ami-12345678",
 		OSNameAndVersion:          "debian-stretch-2019-01-01",
-		Location:                  ValidRegions[0],
+		Location:                  DefaultRegion,
 		AssetType:                 AssetTypeEC2Instance,
 		MACAddress:                "00:00:00:00:00:00\n11:11:11:11:11:11",
 		HardwareMakeModel:         "m4.large",
@@ -39,7 +39,7 @@ var testEC2InstanceRows = []inventory.Row{
 		Public:                    false,
 		BaselineConfigurationName: "ami-abcdefgh",
 		OSNameAndVersion:          "ubuntu-trusty-2019-01-01",
-		Location:                  ValidRegions[0],
+		Location:                  DefaultRegion,
 		AssetType:                 AssetTypeEC2Instance,
 		HardwareMakeModel:         "t2.medium",
 		Function:                  "test app 2",
@@ -52,7 +52,7 @@ var testEC2InstanceRows = []inventory.Row{
 		Public:                    false,
 		BaselineConfigurationName: "ami-a1b2c3d4",
 		OSNameAndVersion:          "ubuntu-xenial-2019-01-01",
-		Location:                  ValidRegions[0],
+		Location:                  DefaultRegion,
 		AssetType:                 AssetTypeEC2Instance,
 		HardwareMakeModel:         "t2.small",
 		Function:                  "test app 3",
@@ -224,7 +224,7 @@ func (e EC2ErrorMock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.D
 func TestCanLoadEC2Instances(t *testing.T) {
 	d := New(logrus.New(), TestClients{EC2: EC2Mock{}, Route53: EC2Route53Mock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceEC2})
+	d.Load([]string{DefaultRegion}, []string{ServiceEC2})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
@@ -252,7 +252,7 @@ func TestLoadEC2InstancesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{EC2: EC2ErrorMock{}, Route53: EC2Route53Mock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceEC2})
+	d.Load([]string{DefaultRegion}, []string{ServiceEC2})
 
 	require.Contains(t, hook.LastEntry().Message, testError.Error())
 }

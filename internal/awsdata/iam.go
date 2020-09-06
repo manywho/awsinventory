@@ -18,7 +18,7 @@ const (
 func (d *AWSData) loadIAMUsers() {
 	defer d.wg.Done()
 
-	iamSvc := d.clients.GetIAMClient(ValidRegions[0])
+	iamSvc := d.clients.GetIAMClient(DefaultRegion)
 
 	log := d.log.WithFields(logrus.Fields{
 		"region":  "global",

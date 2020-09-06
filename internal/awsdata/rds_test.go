@@ -19,7 +19,7 @@ var testRDSInstanceRows = []inventory.Row{
 		UniqueAssetIdentifier:          "test-db-1",
 		Virtual:                        true,
 		DNSNameOrURL:                   "test-db-1.rds.aws.amazon.com",
-		Location:                       ValidRegions[0],
+		Location:                       DefaultRegion,
 		AssetType:                      "RDS Instance",
 		HardwareMakeModel:              "db.t2.medium",
 		SoftwareDatabaseNameAndVersion: "mysql 5.7",
@@ -29,7 +29,7 @@ var testRDSInstanceRows = []inventory.Row{
 		UniqueAssetIdentifier:          "test-db-2",
 		Virtual:                        true,
 		DNSNameOrURL:                   "test-db-2.rds.aws.amazon.com",
-		Location:                       ValidRegions[0],
+		Location:                       DefaultRegion,
 		AssetType:                      "RDS Instance",
 		HardwareMakeModel:              "db.t2.small",
 		SoftwareDatabaseNameAndVersion: "postgres 9.6",
@@ -40,7 +40,7 @@ var testRDSInstanceRows = []inventory.Row{
 		Virtual:                        true,
 		Public:                         true,
 		DNSNameOrURL:                   "test-db-3.rds.aws.amazon.com",
-		Location:                       ValidRegions[0],
+		Location:                       DefaultRegion,
 		AssetType:                      "RDS Instance",
 		HardwareMakeModel:              "db.m4.large",
 		SoftwareDatabaseNameAndVersion: "postgres 10.0",
@@ -114,7 +114,7 @@ func (e RDSErrorMock) DescribeDBInstances(cfg *rds.DescribeDBInstancesInput) (*r
 func TestCanLoadRDSInstances(t *testing.T) {
 	d := New(logrus.New(), TestClients{RDS: RDSMock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceRDS})
+	d.Load([]string{DefaultRegion}, []string{ServiceRDS})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
@@ -130,7 +130,7 @@ func TestLoadRDSInstancesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{RDS: RDSErrorMock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceRDS})
+	d.Load([]string{DefaultRegion}, []string{ServiceRDS})
 
 	require.Contains(t, hook.LastEntry().Message, testError.Error())
 }

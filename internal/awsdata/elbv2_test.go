@@ -19,8 +19,8 @@ var testELBV2Rows = []inventory.Row{
 		UniqueAssetIdentifier: "abcdefgh12345678",
 		Virtual:               true,
 		Public:                true,
-		DNSNameOrURL:          "abcdefgh12345678.ValidRegions[0].elb.amazonaws.com",
-		Location:              ValidRegions[0],
+		DNSNameOrURL:          "abcdefgh12345678.us-east-1.elb.amazonaws.com",
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeALB,
 		VLANNetworkID:         "vpc-abcdefgh",
 	},
@@ -28,8 +28,8 @@ var testELBV2Rows = []inventory.Row{
 		UniqueAssetIdentifier: "12345678abcdefgh",
 		Virtual:               true,
 		Public:                true,
-		DNSNameOrURL:          "12345678abcdefgh.ValidRegions[0].elb.amazonaws.com",
-		Location:              ValidRegions[0],
+		DNSNameOrURL:          "12345678abcdefgh.us-east-1.elb.amazonaws.com",
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeNLB,
 		VLANNetworkID:         "vpc-12345678",
 	},
@@ -37,8 +37,8 @@ var testELBV2Rows = []inventory.Row{
 		UniqueAssetIdentifier: "a1b2c3d4e5f6g7h8",
 		Virtual:               true,
 		Public:                false,
-		DNSNameOrURL:          "a1b2c3d4e5f6g7h8.ValidRegions[0].elb.amazonaws.com",
-		Location:              ValidRegions[0],
+		DNSNameOrURL:          "a1b2c3d4e5f6g7h8.us-east-1.elb.amazonaws.com",
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeALB,
 		VLANNetworkID:         "vpc-a1b2c3d4",
 	},
@@ -92,7 +92,7 @@ func (e ELBV2ErrorMock) DescribeLoadBalancers(cfg *elbv2.DescribeLoadBalancersIn
 func TestCanLoadELBV2s(t *testing.T) {
 	d := New(logrus.New(), TestClients{ELBV2: ELBV2Mock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceELBV2})
+	d.Load([]string{DefaultRegion}, []string{ServiceELBV2})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
@@ -108,7 +108,7 @@ func TestLoadELBV2sLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{ELBV2: ELBV2ErrorMock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceELBV2})
+	d.Load([]string{DefaultRegion}, []string{ServiceELBV2})
 
 	require.Contains(t, hook.LastEntry().Message, testError.Error())
 }
