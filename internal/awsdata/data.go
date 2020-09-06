@@ -57,6 +57,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 	var services = []string{
 		ServiceEBS,
 		ServiceEC2,
+		ServiceElasticsearchService,
 		ServiceELB,
 		ServiceELBV2,
 		ServiceIAM,
@@ -125,6 +126,11 @@ func (d *AWSData) Load(regions, services []string) {
 		if stringInSlice(ServiceEBS, services) {
 			d.wg.Add(1)
 			go d.loadEBSVolumes(region)
+		}
+
+		if stringInSlice(ServiceElasticsearchService, services) {
+			d.wg.Add(1)
+			go d.loadElasticsearchDomains(region)
 		}
 
 		if stringInSlice(ServiceELB, services) {
@@ -229,7 +235,7 @@ func stringInSlice(needle string, haystack []string) bool {
 
 func hasRegionalServices(services []string) bool {
 	for _, service := range services {
-		if service == ServiceEBS || service == ServiceEC2 || service == ServiceELB || service == ServiceELBV2 {
+		if service == ServiceEBS || service == ServiceEC2 || service == ServiceElasticsearchService || service == ServiceELB || service == ServiceELBV2 {
 			return true
 		}
 	}
