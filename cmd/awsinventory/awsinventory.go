@@ -23,18 +23,11 @@ var (
 func init() {
 	pflag.StringVarP(&outputFile, "output-file", "o", "inventory.csv", "path to the output file")
 	pflag.StringSliceVarP(&regions, "regions", "r", []string{}, "regions to gather data from")
-	pflag.StringSliceVarP(&services, "services", "s", awsdata.ValidServices, "services to gather data from")
+	pflag.StringSliceVarP(&services, "services", "s", []string{}, "services to gather data from")
 	pflag.BoolVar(&printRegions, "print-regions", false, "prints the available AWS regions")
 	pflag.StringVarP(&logLevel, "log-level", "l", "warning", "set the level of log output")
 	pflag.BoolVarP(&printVersion, "version", "v", false, "prints the version information")
 	pflag.Parse()
-
-	if printRegions {
-		for _, r := range awsdata.ValidRegions {
-			println(r)
-		}
-		os.Exit(0)
-	}
 
 	if printVersion {
 		fmt.Printf("awsinventory %s+%s\n", version, build)
@@ -46,6 +39,12 @@ func init() {
 
 func main() {
 	awsData := awsdata.New(logger, nil)
+
+	if printRegions {
+		awsData.PrintRegions()
+		os.Exit(0)
+	}
+
 	awsData.Load(regions, services)
 
 	f, err := os.OpenFile(outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)

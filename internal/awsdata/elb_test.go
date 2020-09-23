@@ -19,8 +19,8 @@ var testELBRows = []inventory.Row{
 		UniqueAssetIdentifier: "abcdefgh12345678",
 		Virtual:               true,
 		Public:                true,
-		DNSNameOrURL:          "abcdefgh12345678.ValidRegions[0].elb.amazonaws.com",
-		Location:              ValidRegions[0],
+		DNSNameOrURL:          "abcdefgh12345678.us-east-1.elb.amazonaws.com",
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeELB,
 		Function:              "mydomain.com",
 		VLANNetworkID:         "vpc-abcdefgh",
@@ -29,8 +29,8 @@ var testELBRows = []inventory.Row{
 		UniqueAssetIdentifier: "12345678abcdefgh",
 		Virtual:               true,
 		Public:                true,
-		DNSNameOrURL:          "12345678abcdefgh.ValidRegions[0].elb.amazonaws.com",
-		Location:              ValidRegions[0],
+		DNSNameOrURL:          "12345678abcdefgh.us-east-1.elb.amazonaws.com",
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeELB,
 		Function:              "another.com",
 		VLANNetworkID:         "vpc-12345678",
@@ -39,8 +39,8 @@ var testELBRows = []inventory.Row{
 		UniqueAssetIdentifier: "a1b2c3d4e5f6g7h8",
 		Virtual:               true,
 		Public:                false,
-		DNSNameOrURL:          "a1b2c3d4e5f6g7h8.ValidRegions[0].elb.amazonaws.com",
-		Location:              ValidRegions[0],
+		DNSNameOrURL:          "a1b2c3d4e5f6g7h8.us-east-1.elb.amazonaws.com",
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeELB,
 		Function:              "yetanother.com",
 		VLANNetworkID:         "vpc-a1b2c3d4",
@@ -95,7 +95,7 @@ func (e ELBErrorMock) DescribeLoadBalancers(cfg *elb.DescribeLoadBalancersInput)
 func TestCanLoadELBs(t *testing.T) {
 	d := New(logrus.New(), TestClients{ELB: ELBMock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceELB})
+	d.Load([]string{DefaultRegion}, []string{ServiceELB})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {
@@ -111,7 +111,7 @@ func TestLoadELBsLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{ELB: ELBErrorMock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceELB})
+	d.Load([]string{DefaultRegion}, []string{ServiceELB})
 
 	require.Contains(t, hook.LastEntry().Message, testError.Error())
 }

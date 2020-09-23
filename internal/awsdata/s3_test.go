@@ -81,7 +81,7 @@ func TestLoadS3BucketsLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{S3: S3ErrorMock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceS3})
+	d.Load([]string{DefaultRegion}, []string{ServiceS3})
 
 	require.Contains(t, hook.LastEntry().Message, testError.Error())
 }

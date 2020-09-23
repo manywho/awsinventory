@@ -18,7 +18,7 @@ const (
 func (d *AWSData) loadS3Buckets() {
 	defer d.wg.Done()
 
-	s3Svc := d.clients.GetS3Client(ValidRegions[0])
+	s3Svc := d.clients.GetS3Client(DefaultRegion)
 
 	log := d.log.WithFields(logrus.Fields{
 		"region":  "global",

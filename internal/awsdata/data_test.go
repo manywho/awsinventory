@@ -18,22 +18,12 @@ func TestLoadExitsEarlyWhenRegionsIsEmptyAndRegionalServicesAreIncluded(t *testi
 	require.Contains(t, hook.LastEntry().Message, ErrNoRegions.Error())
 }
 
-func TestLoadExitsEarlyWhenServicesIsEmpty(t *testing.T) {
-	logger, hook := logrustest.NewNullLogger()
-
-	d := New(logger, TestClients{})
-
-	d.Load([]string{ValidRegions[0]}, []string{})
-
-	require.Contains(t, hook.LastEntry().Message, ErrNoServices.Error())
-}
-
 func TestLoadCatchesInvalidRegion(t *testing.T) {
 	logger, hook := logrustest.NewNullLogger()
 
 	d := New(logger, TestClients{})
 
-	d.Load([]string{"test-region"}, []string{ValidServices[0]})
+	d.Load([]string{"test-region"}, []string{})
 
 	require.Contains(t, hook.LastEntry().Message, "invalid region: test-region")
 }
@@ -43,7 +33,7 @@ func TestLoadCatchesInvalidService(t *testing.T) {
 
 	d := New(logger, TestClients{})
 
-	d.Load([]string{ValidRegions[0]}, []string{"invalid-service"})
+	d.Load([]string{DefaultRegion}, []string{"invalid-service"})
 
 	require.Contains(t, hook.LastEntry().Message, "invalid service: invalid-service")
 }

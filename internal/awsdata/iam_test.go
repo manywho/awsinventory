@@ -84,7 +84,7 @@ func TestLoadIAMUsersLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{IAM: IAMErrorMock{}})
 
-	d.Load([]string{ValidRegions[0]}, []string{ServiceIAM})
+	d.Load([]string{DefaultRegion}, []string{ServiceIAM})
 
 	require.Contains(t, hook.LastEntry().Message, testError.Error())
 	hook.Reset()
