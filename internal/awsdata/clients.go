@@ -5,6 +5,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/elasticsearchservice"
+	"github.com/aws/aws-sdk-go/service/elasticsearchservice/elasticsearchserviceiface"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -22,6 +24,7 @@ import (
 // Clients is an interface for getting new AWS service clients
 type Clients interface {
 	GetEC2Client(region string) ec2iface.EC2API
+	GetElasticsearchServiceClient(region string) elasticsearchserviceiface.ElasticsearchServiceAPI
 	GetELBClient(region string) elbiface.ELBAPI
 	GetELBV2Client(region string) elbv2iface.ELBV2API
 	GetIAMClient(region string) iamiface.IAMAPI
@@ -36,6 +39,11 @@ type DefaultClients struct{}
 // GetEC2Client returns a new EC2 client for the given region
 func (c DefaultClients) GetEC2Client(region string) ec2iface.EC2API {
 	return ec2.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+}
+
+// GetElasticsearchServiceClient returns a new ElasticsearchService client for the given region
+func (c DefaultClients) GetElasticsearchServiceClient(region string) elasticsearchserviceiface.ElasticsearchServiceAPI {
+	return elasticsearchservice.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
 }
 
 // GetELBClient returns a new ELB client for the given region
