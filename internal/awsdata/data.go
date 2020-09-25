@@ -1,6 +1,7 @@
 package awsdata
 
 import (
+	"sort"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -57,6 +58,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 	var services = []string{
 		ServiceEBS,
 		ServiceEC2,
+		ServiceECS,
 		ServiceElastiCache,
 		ServiceElasticsearchService,
 		ServiceELB,
@@ -122,6 +124,11 @@ func (d *AWSData) Load(regions, services []string) {
 		if stringInSlice(ServiceEC2, services) {
 			d.wg.Add(1)
 			go d.loadEC2Instances(region)
+		}
+
+		if stringInSlice(ServiceECS, services) {
+			d.wg.Add(1)
+			go d.loadECSContainers(region)
 		}
 
 		if stringInSlice(ServiceEBS, services) {
@@ -229,6 +236,14 @@ func (d *AWSData) appendRow(row inventory.Row) {
 	d.lock.Unlock()
 }
 
+func (d *AWSData) SortRows() {
+	d.lock.Lock()
+	sort.SliceStable(d.rows, func(i, j int) bool {
+		return d.rows[i].UniqueAssetIdentifier < d.rows[j].UniqueAssetIdentifier
+	})
+	d.lock.Unlock()
+}
+
 func stringInSlice(needle string, haystack []string) bool {
 	for _, s := range haystack {
 		if needle == s {
@@ -239,10 +254,20 @@ func stringInSlice(needle string, haystack []string) bool {
 	return false
 }
 
+func AppendIfMissing(slice []string, s string) []string {
+	for _, ele := range slice {
+		if ele == s {
+			return slice
+		}
+	}
+	return append(slice, s)
+}
+
 func hasRegionalServices(services []string) bool {
 	var regionalServices = []string{
 		ServiceEBS,
 		ServiceEC2,
+		ServiceECS,
 		ServiceElastiCache,
 		ServiceElasticsearchService,
 		ServiceELB,

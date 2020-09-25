@@ -32,7 +32,7 @@ Usage of ./awsinventory:
   -o, --output-file string   path to the output file (default "inventory.csv")
       --print-regions        prints the available AWS regions
   -r, --regions strings      regions to gather data from
-  -s, --services strings     services to gather data from (default [ebs,ec2,elasticache,elb,elbv2,es,iam,rds,s3])
+  -s, --services strings     services to gather data from (default [ebs,ec2,ecs,elasticache,elb,elbv2,es,iam,rds,s3])
   -v, --version              prints the version information
 ```
 

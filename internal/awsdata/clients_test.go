@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 	"github.com/aws/aws-sdk-go/service/elasticache/elasticacheiface"
 	"github.com/aws/aws-sdk-go/service/elasticsearchservice/elasticsearchserviceiface"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
@@ -18,6 +19,7 @@ var testError = errors.New("test aws error")
 
 type TestClients struct {
 	EC2                  ec2iface.EC2API
+	ECS                  ecsiface.ECSAPI
 	ElastiCache          elasticacheiface.ElastiCacheAPI
 	ElasticsearchService elasticsearchserviceiface.ElasticsearchServiceAPI
 	ELB                  elbiface.ELBAPI
@@ -30,6 +32,10 @@ type TestClients struct {
 
 func (c TestClients) GetEC2Client(region string) ec2iface.EC2API {
 	return c.EC2
+}
+
+func (c TestClients) GetECSClient(region string) ecsiface.ECSAPI {
+	return c.ECS
 }
 
 func (c TestClients) GetElastiCacheClient(region string) elasticacheiface.ElastiCacheAPI {
