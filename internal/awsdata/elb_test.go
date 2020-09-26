@@ -23,6 +23,7 @@ var testELBRows = []inventory.Row{
 		Location:              DefaultRegion,
 		AssetType:             AssetTypeELB,
 		Function:              "mydomain.com",
+		SerialAssetTagNumber:  "arn:aws:elasticloadbalancing:us-east-1:012345678910:loadbalancer/abcdefgh12345678",
 		VLANNetworkID:         "vpc-abcdefgh",
 	},
 	{
@@ -33,6 +34,7 @@ var testELBRows = []inventory.Row{
 		Location:              DefaultRegion,
 		AssetType:             AssetTypeELB,
 		Function:              "another.com",
+		SerialAssetTagNumber:  "arn:aws:elasticloadbalancing:us-east-1:012345678910:loadbalancer/12345678abcdefgh",
 		VLANNetworkID:         "vpc-12345678",
 	},
 	{
@@ -43,12 +45,13 @@ var testELBRows = []inventory.Row{
 		Location:              DefaultRegion,
 		AssetType:             AssetTypeELB,
 		Function:              "yetanother.com",
+		SerialAssetTagNumber:  "arn:aws:elasticloadbalancing:us-east-1:012345678910:loadbalancer/a1b2c3d4e5f6g7h8",
 		VLANNetworkID:         "vpc-a1b2c3d4",
 	},
 }
 
 // Test Data
-var testELBOutput = &elb.DescribeLoadBalancersOutput{
+var testELBDescribeLoadBalancersOutput = &elb.DescribeLoadBalancersOutput{
 	LoadBalancerDescriptions: []*elb.LoadBalancerDescription{
 		{
 			LoadBalancerName:        aws.String(testELBRows[0].UniqueAssetIdentifier),
@@ -80,7 +83,7 @@ type ELBMock struct {
 }
 
 func (e ELBMock) DescribeLoadBalancers(cfg *elb.DescribeLoadBalancersInput) (*elb.DescribeLoadBalancersOutput, error) {
-	return testELBOutput, nil
+	return testELBDescribeLoadBalancersOutput, nil
 }
 
 type ELBErrorMock struct {
@@ -93,7 +96,7 @@ func (e ELBErrorMock) DescribeLoadBalancers(cfg *elb.DescribeLoadBalancersInput)
 
 // Tests
 func TestCanLoadELBs(t *testing.T) {
-	d := New(logrus.New(), TestClients{ELB: ELBMock{}})
+	d := New(logrus.New(), TestClients{EC2: EC2Mock{}, ELB: ELBMock{}})
 
 	d.Load([]string{DefaultRegion}, []string{ServiceELB})
 
@@ -109,7 +112,7 @@ func TestCanLoadELBs(t *testing.T) {
 func TestLoadELBsLogsError(t *testing.T) {
 	logger, hook := logrustest.NewNullLogger()
 
-	d := New(logger, TestClients{ELB: ELBErrorMock{}})
+	d := New(logger, TestClients{EC2: EC2ErrorMock{}, ELB: ELBErrorMock{}})
 
 	d.Load([]string{DefaultRegion}, []string{ServiceELB})
 

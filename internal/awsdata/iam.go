@@ -24,20 +24,38 @@ func (d *AWSData) loadIAMUsers() {
 		"region":  "global",
 		"service": ServiceIAM,
 	})
+
 	log.Info("loading data")
-	out, err := iamSvc.ListUsers(&iam.ListUsersInput{})
-	if err != nil {
-		d.results <- result{Err: err}
-		return
+
+	var users []*iam.User
+	done := false
+	params := &iam.ListUsersInput{}
+	for !done {
+		out, err := iamSvc.ListUsers(params)
+
+		if err != nil {
+			d.results <- result{Err: err}
+			return
+		}
+
+		users = append(users, out.Users...)
+
+		if aws.BoolValue(out.IsTruncated) {
+			params.Marker = out.Marker
+		} else {
+			done = true
+		}
 	}
 
 	log.Info("processing data")
-	for _, u := range out.Users {
+
+	for _, u := range users {
 		d.results <- result{
 			Row: inventory.Row{
 				UniqueAssetIdentifier: aws.StringValue(u.UserName),
 				Virtual:               true,
 				AssetType:             AssetTypeIAMUser,
+				SerialAssetTagNumber:  aws.StringValue(u.Arn),
 			},
 		}
 	}

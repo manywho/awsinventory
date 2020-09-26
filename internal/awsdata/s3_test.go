@@ -17,20 +17,29 @@ import (
 var testS3Rows = []inventory.Row{
 	{
 		UniqueAssetIdentifier: "test-bucket-1",
+		Virtual:               true,
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeS3Bucket,
+		SerialAssetTagNumber:  "arn:aws:s3:::test-bucket-1",
 	},
 	{
 		UniqueAssetIdentifier: "test-bucket-2",
+		Virtual:               true,
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeS3Bucket,
+		SerialAssetTagNumber:  "arn:aws:s3:::test-bucket-2",
 	},
 	{
 		UniqueAssetIdentifier: "test-bucket-3",
+		Virtual:               true,
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeS3Bucket,
+		SerialAssetTagNumber:  "arn:aws:s3:::test-bucket-3",
 	},
 }
 
 // Test Data
-var testS3Output = &s3.ListBucketsOutput{
+var testS3ListBucketsOutput = &s3.ListBucketsOutput{
 	Buckets: []*s3.Bucket{
 		{
 			Name: aws.String(testS3Rows[0].UniqueAssetIdentifier),
@@ -44,13 +53,21 @@ var testS3Output = &s3.ListBucketsOutput{
 	},
 }
 
+var testS3GetBucketLocationOutput = &s3.GetBucketLocationOutput{
+	LocationConstraint: nil,
+}
+
 // Mocks
 type S3Mock struct {
 	s3iface.S3API
 }
 
 func (e S3Mock) ListBuckets(cfg *s3.ListBucketsInput) (*s3.ListBucketsOutput, error) {
-	return testS3Output, nil
+	return testS3ListBucketsOutput, nil
+}
+
+func (e S3Mock) GetBucketLocation(cfg *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
+	return testS3GetBucketLocationOutput, nil
 }
 
 type S3ErrorMock struct {
@@ -61,11 +78,15 @@ func (e S3ErrorMock) ListBuckets(cfg *s3.ListBucketsInput) (*s3.ListBucketsOutpu
 	return &s3.ListBucketsOutput{}, testError
 }
 
+func (e S3ErrorMock) GetBucketLocation(cfg *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
+	return &s3.GetBucketLocationOutput{}, testError
+}
+
 // Tests
 func TestCanLoadS3Buckets(t *testing.T) {
 	d := New(logrus.New(), TestClients{S3: S3Mock{}})
 
-	d.Load([]string{}, []string{ServiceS3})
+	d.Load([]string{DefaultRegion}, []string{ServiceS3})
 
 	var count int
 	d.MapRows(func(row inventory.Row) error {

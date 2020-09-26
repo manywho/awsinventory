@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
@@ -26,15 +27,47 @@ func (d *AWSData) loadEBSVolumes(region string) {
 		"region":  region,
 		"service": ServiceEBS,
 	})
+
 	log.Info("loading data")
-	out, err := ec2Svc.DescribeVolumes(&ec2.DescribeVolumesInput{})
+
+	var partition string
+	if p, ok := endpoints.PartitionForRegion(endpoints.DefaultPartitions(), region); ok {
+		partition = p.ID()
+	}
+
+	var accountId string
+	out, err := ec2Svc.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
+		MaxResults: aws.Int64(5),
+	})
 	if err != nil {
 		d.results <- result{Err: err}
 		return
+	} else if len(out.SecurityGroups) > 0 {
+		accountId = aws.StringValue(out.SecurityGroups[0].OwnerId)
+	}
+
+	var volumes []*ec2.Volume
+	done := false
+	params := &ec2.DescribeVolumesInput{}
+	for !done {
+		out, err := ec2Svc.DescribeVolumes(params)
+		if err != nil {
+			d.results <- result{Err: err}
+			return
+		}
+
+		volumes = append(volumes, out.Volumes...)
+
+		if out.NextToken == nil {
+			done = true
+		} else {
+			params.NextToken = out.NextToken
+		}
 	}
 
 	log.Info("processing data")
-	for _, v := range out.Volumes {
+
+	for _, v := range volumes {
 		var name string
 		for _, t := range v.Tags {
 			if aws.StringValue(t.Key) == "Name" {
@@ -45,10 +78,12 @@ func (d *AWSData) loadEBSVolumes(region string) {
 		d.results <- result{
 			Row: inventory.Row{
 				UniqueAssetIdentifier: aws.StringValue(v.VolumeId),
-				Location:              aws.StringValue(v.AvailabilityZone),
+				Virtual:               true,
+				Location:              region,
 				AssetType:             AssetTypeEBSVolume,
 				HardwareMakeModel:     fmt.Sprintf("%s (%dGB)", aws.StringValue(v.VolumeType), aws.Int64Value(v.Size)),
 				Function:              name,
+				SerialAssetTagNumber:  fmt.Sprintf("arn:%s:ec2:%s:%s:volume/%s", partition, region, accountId, aws.StringValue(v.VolumeId)),
 			},
 		}
 	}

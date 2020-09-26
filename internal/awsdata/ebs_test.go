@@ -17,27 +17,33 @@ import (
 var testEBSVolumeRows = []inventory.Row{
 	{
 		UniqueAssetIdentifier: "vol-12345678",
-		Location:              DefaultRegion + "-1a",
+		Virtual:               true,
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeEBSVolume,
 		HardwareMakeModel:     "gp2 (100GB)",
 		Function:              "test app 1",
+		SerialAssetTagNumber:  "arn:aws:ec2:us-east-1:012345678910:volume/vol-12345678",
 	},
 	{
 		UniqueAssetIdentifier: "vol-abcdefgh",
-		Location:              DefaultRegion + "-1b",
+		Virtual:               true,
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeEBSVolume,
 		HardwareMakeModel:     "gp2 (50GB)",
+		SerialAssetTagNumber:  "arn:aws:ec2:us-east-1:012345678910:volume/vol-abcdefgh",
 	},
 	{
 		UniqueAssetIdentifier: "vol-a1b2c3d4",
-		Location:              DefaultRegion + "-1c",
+		Virtual:               true,
+		Location:              DefaultRegion,
 		AssetType:             AssetTypeEBSVolume,
 		HardwareMakeModel:     "gp2 (20GB)",
+		SerialAssetTagNumber:  "arn:aws:ec2:us-east-1:012345678910:volume/vol-a1b2c3d4",
 	},
 }
 
 // Test Data
-var testEBSVolumesOutput = &ec2.DescribeVolumesOutput{
+var testEBSDescribeVolumesOutput = &ec2.DescribeVolumesOutput{
 	Volumes: []*ec2.Volume{
 		{
 			VolumeId:         aws.String(testEBSVolumeRows[0].UniqueAssetIdentifier),
@@ -56,14 +62,12 @@ var testEBSVolumesOutput = &ec2.DescribeVolumesOutput{
 			},
 		},
 		{
-
 			VolumeId:         aws.String(testEBSVolumeRows[1].UniqueAssetIdentifier),
 			VolumeType:       aws.String("gp2"),
 			AvailabilityZone: aws.String(testEBSVolumeRows[1].Location),
 			Size:             aws.Int64(50),
 		},
 		{
-
 			VolumeId:         aws.String(testEBSVolumeRows[2].UniqueAssetIdentifier),
 			VolumeType:       aws.String("gp2"),
 			AvailabilityZone: aws.String(testEBSVolumeRows[2].Location),
@@ -77,12 +81,20 @@ type EBSMock struct {
 	ec2iface.EC2API
 }
 
+func (e EBSMock) DescribeSecurityGroups(cfg *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
+	return testEC2DescribeSecurityGroupsOutput, nil
+}
+
 func (e EBSMock) DescribeVolumes(cfg *ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
-	return testEBSVolumesOutput, nil
+	return testEBSDescribeVolumesOutput, nil
 }
 
 type EBSErrorMock struct {
 	ec2iface.EC2API
+}
+
+func (e EBSErrorMock) DescribeSecurityGroups(cfg *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
+	return &ec2.DescribeSecurityGroupsOutput{}, testError
 }
 
 func (e EBSErrorMock) DescribeVolumes(cfg *ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {

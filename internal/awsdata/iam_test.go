@@ -19,30 +19,36 @@ var testIAMRows = []inventory.Row{
 		UniqueAssetIdentifier: "test-user-1",
 		Virtual:               true,
 		AssetType:             AssetTypeIAMUser,
+		SerialAssetTagNumber:  "arn:aws:iam::123456789012:user/test-user-1",
 	},
 	{
 		UniqueAssetIdentifier: "test-user-2",
 		Virtual:               true,
 		AssetType:             AssetTypeIAMUser,
+		SerialAssetTagNumber:  "arn:aws:iam::123456789012:user/test-user-2",
 	},
 	{
 		UniqueAssetIdentifier: "test-user-3",
 		Virtual:               true,
 		AssetType:             AssetTypeIAMUser,
+		SerialAssetTagNumber:  "arn:aws:iam::123456789012:user/test-user-3",
 	},
 }
 
 // Test Data
-var testIAMOutput = &iam.ListUsersOutput{
+var testIAMListUsersOutput = &iam.ListUsersOutput{
 	Users: []*iam.User{
 		{
 			UserName: aws.String(testIAMRows[0].UniqueAssetIdentifier),
+			Arn:      aws.String(testIAMRows[0].SerialAssetTagNumber),
 		},
 		{
 			UserName: aws.String(testIAMRows[1].UniqueAssetIdentifier),
+			Arn:      aws.String(testIAMRows[1].SerialAssetTagNumber),
 		},
 		{
 			UserName: aws.String(testIAMRows[2].UniqueAssetIdentifier),
+			Arn:      aws.String(testIAMRows[2].SerialAssetTagNumber),
 		},
 	},
 }
@@ -53,7 +59,7 @@ type IAMMock struct {
 }
 
 func (e IAMMock) ListUsers(cfg *iam.ListUsersInput) (*iam.ListUsersOutput, error) {
-	return testIAMOutput, nil
+	return testIAMListUsersOutput, nil
 }
 
 type IAMErrorMock struct {

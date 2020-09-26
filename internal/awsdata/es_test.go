@@ -57,21 +57,21 @@ var testElasticsearchDomainRows = []inventory.Row{
 }
 
 // Test Data
-var testDomainNamesOutput = &elasticsearchservice.ListDomainNamesOutput{
+var testElasticsearchListDomainNamesOutput = &elasticsearchservice.ListDomainNamesOutput{
 	DomainNames: []*elasticsearchservice.DomainInfo{
 		{
-		  DomainName: aws.String(testElasticsearchDomainRows[0].UniqueAssetIdentifier),
+			DomainName: aws.String(testElasticsearchDomainRows[0].UniqueAssetIdentifier),
 		},
 		{
-		  DomainName: aws.String(testElasticsearchDomainRows[1].UniqueAssetIdentifier),
+			DomainName: aws.String(testElasticsearchDomainRows[1].UniqueAssetIdentifier),
 		},
 		{
-		  DomainName: aws.String(testElasticsearchDomainRows[2].UniqueAssetIdentifier),
+			DomainName: aws.String(testElasticsearchDomainRows[2].UniqueAssetIdentifier),
 		},
 	},
 }
 
-var testElasticsearchDomainsOutput = &elasticsearchservice.DescribeElasticsearchDomainsOutput{
+var testElasticsearchDescribeElasticsearchDomainsOutput = &elasticsearchservice.DescribeElasticsearchDomainsOutput{
 	DomainStatusList: []*elasticsearchservice.ElasticsearchDomainStatus{
 		{
 			DomainName: aws.String(testElasticsearchDomainRows[0].UniqueAssetIdentifier),
@@ -124,11 +124,11 @@ type ElasticsearchServiceMock struct {
 }
 
 func (e ElasticsearchServiceMock) ListDomainNames(cfg *elasticsearchservice.ListDomainNamesInput) (*elasticsearchservice.ListDomainNamesOutput, error) {
-	return testDomainNamesOutput, nil
+	return testElasticsearchListDomainNamesOutput, nil
 }
 
 func (e ElasticsearchServiceMock) DescribeElasticsearchDomains(cfg *elasticsearchservice.DescribeElasticsearchDomainsInput) (*elasticsearchservice.DescribeElasticsearchDomainsOutput, error) {
-	return testElasticsearchDomainsOutput, nil
+	return testElasticsearchDescribeElasticsearchDomainsOutput, nil
 }
 
 type ElasticsearchServiceErrorMock struct {

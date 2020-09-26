@@ -30,6 +30,7 @@ var testEC2InstanceRows = []inventory.Row{
 		MACAddress:                "00:00:00:00:00:00\n11:11:11:11:11:11",
 		HardwareMakeModel:         "m4.large",
 		Function:                  "test app 1",
+		SerialAssetTagNumber:      "arn:aws:ec2:us-east-1:012345678910:instance/i-12345678",
 		VLANNetworkID:             "vpc-12345678",
 	},
 	{
@@ -43,6 +44,7 @@ var testEC2InstanceRows = []inventory.Row{
 		AssetType:                 AssetTypeEC2Instance,
 		HardwareMakeModel:         "t2.medium",
 		Function:                  "test app 2",
+		SerialAssetTagNumber:      "arn:aws:ec2:us-east-1:012345678910:instance/i-abcdefgh",
 		VLANNetworkID:             "vpc-abcdefgh",
 	},
 	{
@@ -56,6 +58,7 @@ var testEC2InstanceRows = []inventory.Row{
 		AssetType:                 AssetTypeEC2Instance,
 		HardwareMakeModel:         "t2.small",
 		Function:                  "test app 3",
+		SerialAssetTagNumber:      "arn:aws:ec2:us-east-1:012345678910:instance/i-a1b2c3d4",
 		VLANNetworkID:             "vpc-a1b2c3d4",
 	},
 }
@@ -68,6 +71,7 @@ var testEC2Route53HostedZonesOutput = &route53.ListHostedZonesOutput{
 		},
 	},
 }
+
 var testEC2Route53RecordSetsOutput = &route53.ListResourceRecordSetsOutput{
 	ResourceRecordSets: []*route53.ResourceRecordSet{
 		&route53.ResourceRecordSet{
@@ -75,14 +79,22 @@ var testEC2Route53RecordSetsOutput = &route53.ListResourceRecordSetsOutput{
 			Name: aws.String(testEC2InstanceRows[0].DNSNameOrURL),
 			ResourceRecords: []*route53.ResourceRecord{
 				{
-					Value: testEC2InstanceOutput.Reservations[0].Instances[0].PublicIpAddress,
+					Value: testEC2DescribeInstancesOutput.Reservations[0].Instances[0].PublicIpAddress,
 				},
 			},
 		},
 	},
 }
 
-var testEC2InstanceOutput = &ec2.DescribeInstancesOutput{
+var testEC2DescribeSecurityGroupsOutput = &ec2.DescribeSecurityGroupsOutput{
+	SecurityGroups: []*ec2.SecurityGroup{
+		{
+			OwnerId: aws.String("012345678910"),
+		},
+	},
+}
+
+var testEC2DescribeInstancesOutput = &ec2.DescribeInstancesOutput{
 	Reservations: []*ec2.Reservation{
 		{
 			Instances: []*ec2.Instance{
@@ -164,21 +176,17 @@ var testEC2InstanceOutput = &ec2.DescribeInstancesOutput{
 	},
 }
 
-var testEC2ImageOutput = &ec2.DescribeImagesOutput{
-	Images: []*ec2.Image{
-		{
-			Name: aws.String(testEC2InstanceRows[0].OSNameAndVersion),
-		},
-	},
-}
-
 // Mocks
 type EC2Mock struct {
 	ec2iface.EC2API
 }
 
+func (e EC2Mock) DescribeSecurityGroups(cfg *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
+	return testEC2DescribeSecurityGroupsOutput, nil
+}
+
 func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
-	return testEC2InstanceOutput, nil
+	return testEC2DescribeInstancesOutput, nil
 }
 
 func (e EC2Mock) DescribeImages(cfg *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
@@ -216,8 +224,16 @@ type EC2ErrorMock struct {
 	ec2iface.EC2API
 }
 
+func (e EC2ErrorMock) DescribeSecurityGroups(cfg *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
+	return &ec2.DescribeSecurityGroupsOutput{}, testError
+}
+
 func (e EC2ErrorMock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return &ec2.DescribeInstancesOutput{}, testError
+}
+
+func (e EC2ErrorMock) DescribeImages(cfg *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
+	return &ec2.DescribeImagesOutput{}, testError
 }
 
 // Tests

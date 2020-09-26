@@ -18,21 +18,27 @@ var testRDSInstanceRows = []inventory.Row{
 	{
 		UniqueAssetIdentifier:          "test-db-1",
 		Virtual:                        true,
+		Public:                         false,
 		DNSNameOrURL:                   "test-db-1.rds.aws.amazon.com",
 		Location:                       DefaultRegion,
 		AssetType:                      "RDS Instance",
 		HardwareMakeModel:              "db.t2.medium",
+		SoftwareDatabaseVendor:         "mysql",
 		SoftwareDatabaseNameAndVersion: "mysql 5.7",
+		SerialAssetTagNumber:           "arn:aws:rds:us-east-1:123456789012:db:test-db-1",
 		VLANNetworkID:                  "vpc-12345678",
 	},
 	{
 		UniqueAssetIdentifier:          "test-db-2",
 		Virtual:                        true,
+		Public:                         false,
 		DNSNameOrURL:                   "test-db-2.rds.aws.amazon.com",
 		Location:                       DefaultRegion,
 		AssetType:                      "RDS Instance",
 		HardwareMakeModel:              "db.t2.small",
+		SoftwareDatabaseVendor:         "postgres",
 		SoftwareDatabaseNameAndVersion: "postgres 9.6",
+		SerialAssetTagNumber:           "arn:aws:rds:us-east-1:123456789012:db:test-db-2",
 		VLANNetworkID:                  "vpc-abcdefgh",
 	},
 	{
@@ -43,16 +49,19 @@ var testRDSInstanceRows = []inventory.Row{
 		Location:                       DefaultRegion,
 		AssetType:                      "RDS Instance",
 		HardwareMakeModel:              "db.m4.large",
+		SoftwareDatabaseVendor:         "postgres",
 		SoftwareDatabaseNameAndVersion: "postgres 10.0",
+		SerialAssetTagNumber:           "arn:aws:rds:us-east-1:123456789012:db:test-db-3",
 		VLANNetworkID:                  "vpc-a1b2c3d4",
 	},
 }
 
 // Test Data
-var testRDSInstanceOutput = &rds.DescribeDBInstancesOutput{
+var testRDSDescribeDBInstancesOutput = &rds.DescribeDBInstancesOutput{
 	DBInstances: []*rds.DBInstance{
 		{
 			DBInstanceIdentifier: aws.String(testRDSInstanceRows[0].UniqueAssetIdentifier),
+			DBInstanceArn:        aws.String(testRDSInstanceRows[0].SerialAssetTagNumber),
 			Engine:               aws.String("mysql"),
 			EngineVersion:        aws.String("5.7"),
 			DBInstanceClass:      aws.String("db.t2.medium"),
@@ -66,6 +75,7 @@ var testRDSInstanceOutput = &rds.DescribeDBInstancesOutput{
 		},
 		{
 			DBInstanceIdentifier: aws.String(testRDSInstanceRows[1].UniqueAssetIdentifier),
+			DBInstanceArn:        aws.String(testRDSInstanceRows[1].SerialAssetTagNumber),
 			Engine:               aws.String("postgres"),
 			EngineVersion:        aws.String("9.6"),
 			DBInstanceClass:      aws.String("db.t2.small"),
@@ -79,6 +89,7 @@ var testRDSInstanceOutput = &rds.DescribeDBInstancesOutput{
 		},
 		{
 			DBInstanceIdentifier: aws.String(testRDSInstanceRows[2].UniqueAssetIdentifier),
+			DBInstanceArn:        aws.String(testRDSInstanceRows[2].SerialAssetTagNumber),
 			Engine:               aws.String("postgres"),
 			EngineVersion:        aws.String("10.0"),
 			DBInstanceClass:      aws.String("db.m4.large"),
@@ -99,7 +110,7 @@ type RDSMock struct {
 }
 
 func (e RDSMock) DescribeDBInstances(cfg *rds.DescribeDBInstancesInput) (*rds.DescribeDBInstancesOutput, error) {
-	return testRDSInstanceOutput, nil
+	return testRDSDescribeDBInstancesOutput, nil
 }
 
 type RDSErrorMock struct {

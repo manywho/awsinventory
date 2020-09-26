@@ -26,26 +26,44 @@ func (d *AWSData) loadRDSInstances(region string) {
 		"region":  region,
 		"service": ServiceRDS,
 	})
+
 	log.Info("loading data")
-	out, err := rdsSvc.DescribeDBInstances(&rds.DescribeDBInstancesInput{})
-	if err != nil {
-		d.results <- result{Err: err}
-		return
+
+	var dbInstances []*rds.DBInstance
+	done := false
+	params := &rds.DescribeDBInstancesInput{}
+	for !done {
+		out, err := rdsSvc.DescribeDBInstances(params)
+
+		if err != nil {
+			d.results <- result{Err: err}
+			return
+		}
+
+		dbInstances = append(dbInstances, out.DBInstances...)
+
+		if out.Marker == nil {
+			done = true
+		} else {
+			params.Marker = out.Marker
+		}
 	}
 
 	log.Info("processing data")
-	for _, i := range out.DBInstances {
+
+	for _, i := range dbInstances {
 		d.results <- result{
 			Row: inventory.Row{
-				UniqueAssetIdentifier: aws.StringValue(i.DBInstanceIdentifier),
-				Virtual:               true,
-				Public:                aws.BoolValue(i.PubliclyAccessible),
-				DNSNameOrURL:          aws.StringValue(i.Endpoint.Address),
-				Location:              region,
-				AssetType:             AssetTypeRDSInstance,
-				HardwareMakeModel:     aws.StringValue(i.DBInstanceClass),
-				// TODO: SoftwareDatabaseVendor
+				UniqueAssetIdentifier:          aws.StringValue(i.DBInstanceIdentifier),
+				Virtual:                        true,
+				Public:                         aws.BoolValue(i.PubliclyAccessible),
+				DNSNameOrURL:                   aws.StringValue(i.Endpoint.Address),
+				Location:                       region,
+				AssetType:                      AssetTypeRDSInstance,
+				HardwareMakeModel:              aws.StringValue(i.DBInstanceClass),
+				SoftwareDatabaseVendor:         aws.StringValue(i.Engine),
 				SoftwareDatabaseNameAndVersion: fmt.Sprintf("%s %s", aws.StringValue(i.Engine), aws.StringValue(i.EngineVersion)),
+				SerialAssetTagNumber:           aws.StringValue(i.DBInstanceArn),
 				VLANNetworkID:                  aws.StringValue(i.DBSubnetGroup.VpcId),
 			},
 		}

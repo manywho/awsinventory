@@ -30,7 +30,9 @@ func (d *AWSData) loadECSContainers(region string) {
 		"region":  region,
 		"service": ServiceECS,
 	})
-	log.Info("loading instance data")
+
+	log.Info("loading data")
+
 	var clusterArns []*string
 	done := false
 	params := &ecs.ListClustersInput{}
@@ -59,7 +61,8 @@ func (d *AWSData) loadECSContainers(region string) {
 		return
 	}
 
-	log.Info("processing instance data")
+	log.Info("processing data")
+
 	for _, cluster := range out.Clusters {
 		var taskArns []*string
 		done := false
@@ -86,7 +89,7 @@ func (d *AWSData) loadECSContainers(region string) {
 		// TODO: API call can only handle 100 task ARNs at a time
 		outDescribeTasks, err := ecsSvc.DescribeTasks(&ecs.DescribeTasksInput{
 			Cluster: cluster.ClusterArn,
-			Tasks: taskArns,
+			Tasks:   taskArns,
 		})
 		if err != nil {
 			d.results <- result{Err: err}
@@ -100,7 +103,7 @@ func (d *AWSData) loadECSContainers(region string) {
 		}
 	}
 
-	log.Info("finished processing instance data")
+	log.Info("finished processing data")
 }
 
 func (d *AWSData) processECSContainer(container *ecs.Container, task *ecs.Task, cluster *ecs.Cluster, ec2Svc ec2iface.EC2API, region string) {
@@ -117,13 +120,13 @@ func (d *AWSData) processECSContainer(container *ecs.Container, task *ecs.Task, 
 		for _, details := range attachment.Details {
 			switch aws.StringValue(details.Name) {
 			case "privateIPv4Address":
-			  ips = append(ips, aws.StringValue(details.Value))
+				ips = append(ips, aws.StringValue(details.Value))
 			case "ipv6Address":
-			  ips = append(ips, aws.StringValue(details.Value))
+				ips = append(ips, aws.StringValue(details.Value))
 			case "macAddress":
-			  macAddresses = append(macAddresses, aws.StringValue(details.Value))
+				macAddresses = append(macAddresses, aws.StringValue(details.Value))
 			case "networkInterfaceId":
-			  networkInterfaces = append(networkInterfaces, aws.StringValue(details.Value))
+				networkInterfaces = append(networkInterfaces, aws.StringValue(details.Value))
 			}
 		}
 	}
