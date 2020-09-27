@@ -3,6 +3,7 @@ package awsdata_test
 import (
 	"errors"
 
+	"github.com/aws/aws-sdk-go/service/cloudfront/cloudfrontiface"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
@@ -20,6 +21,7 @@ import (
 var testError = errors.New("test aws error")
 
 type TestClients struct {
+	CloudFront           cloudfrontiface.CloudFrontAPI
 	DynamoDB             dynamodbiface.DynamoDBAPI
 	EC2                  ec2iface.EC2API
 	ECS                  ecsiface.ECSAPI
@@ -32,6 +34,10 @@ type TestClients struct {
 	RDS                  rdsiface.RDSAPI
 	Route53              route53iface.Route53API
 	S3                   s3iface.S3API
+}
+
+func (c TestClients) GetCloudFrontClient(region string) cloudfrontiface.CloudFrontAPI {
+	return c.CloudFront
 }
 
 func (c TestClients) GetDynamoDBClient(region string) dynamodbiface.DynamoDBAPI {
