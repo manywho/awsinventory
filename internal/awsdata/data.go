@@ -71,6 +71,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 		ServiceLambda,
 		ServiceRDS,
 		ServiceS3,
+		ServiceSQS,
 	}
 
 	return &AWSData{
@@ -198,6 +199,12 @@ func (d *AWSData) Load(regions, services []string) {
 			d.log.Debug("including S3 service")
 			d.wg.Add(1)
 			go d.loadS3Buckets(region)
+		}
+
+		if stringInSlice(ServiceSQS, services) {
+			d.log.Debug("including SQS service")
+			d.wg.Add(1)
+			go d.loadSQSQueues(region)
 		}
 	}
 
