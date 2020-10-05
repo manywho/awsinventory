@@ -22,6 +22,7 @@ var testELBV2Rows = []inventory.Row{
 		DNSNameOrURL:          "abcdefgh12345678.us-east-1.elb.amazonaws.com",
 		Location:              DefaultRegion,
 		AssetType:             AssetTypeALB,
+		SerialAssetTagNumber:  "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/abcdefgh12345678/50dc6c495c0c9188",
 		VLANNetworkID:         "vpc-abcdefgh",
 	},
 	{
@@ -31,6 +32,7 @@ var testELBV2Rows = []inventory.Row{
 		DNSNameOrURL:          "12345678abcdefgh.us-east-1.elb.amazonaws.com",
 		Location:              DefaultRegion,
 		AssetType:             AssetTypeNLB,
+		SerialAssetTagNumber:  "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/12345678abcdefgh/b6dabd72b1aef5a2",
 		VLANNetworkID:         "vpc-12345678",
 	},
 	{
@@ -40,33 +42,37 @@ var testELBV2Rows = []inventory.Row{
 		DNSNameOrURL:          "a1b2c3d4e5f6g7h8.us-east-1.elb.amazonaws.com",
 		Location:              DefaultRegion,
 		AssetType:             AssetTypeALB,
+		SerialAssetTagNumber:  "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/a1b2c3d4e5f6g7h8/573c812d8a4526b7",
 		VLANNetworkID:         "vpc-a1b2c3d4",
 	},
 }
 
 // Test Data
-var testELBV2Output = &elbv2.DescribeLoadBalancersOutput{
+var testELBV2DescribeLoadBalancersOutput = &elbv2.DescribeLoadBalancersOutput{
 	LoadBalancers: []*elbv2.LoadBalancer{
 		{
-			LoadBalancerName:        aws.String(testELBV2Rows[0].UniqueAssetIdentifier),
-			DNSName:                 aws.String(testELBV2Rows[0].DNSNameOrURL),
-			Type:                    aws.String("application"),
-			Scheme:                  aws.String("internet-facing"),
-			VpcId:                   aws.String(testELBV2Rows[0].VLANNetworkID),
+			LoadBalancerName: aws.String(testELBV2Rows[0].UniqueAssetIdentifier),
+			LoadBalancerArn:  aws.String(testELBV2Rows[0].SerialAssetTagNumber),
+			DNSName:          aws.String(testELBV2Rows[0].DNSNameOrURL),
+			Type:             aws.String("application"),
+			Scheme:           aws.String("internet-facing"),
+			VpcId:            aws.String(testELBV2Rows[0].VLANNetworkID),
 		},
 		{
-			LoadBalancerName:        aws.String(testELBV2Rows[1].UniqueAssetIdentifier),
-			DNSName:                 aws.String(testELBV2Rows[1].DNSNameOrURL),
-			Type:                    aws.String("network"),
-			Scheme:                  aws.String("internet-facing"),
-			VpcId:                   aws.String(testELBV2Rows[1].VLANNetworkID),
+			LoadBalancerName: aws.String(testELBV2Rows[1].UniqueAssetIdentifier),
+			LoadBalancerArn:  aws.String(testELBV2Rows[1].SerialAssetTagNumber),
+			DNSName:          aws.String(testELBV2Rows[1].DNSNameOrURL),
+			Type:             aws.String("network"),
+			Scheme:           aws.String("internet-facing"),
+			VpcId:            aws.String(testELBV2Rows[1].VLANNetworkID),
 		},
 		{
-			LoadBalancerName:        aws.String(testELBV2Rows[2].UniqueAssetIdentifier),
-			DNSName:                 aws.String(testELBV2Rows[2].DNSNameOrURL),
-			Type:                    aws.String("application"),
-			Scheme:                  aws.String("internal"),
-			VpcId:                   aws.String(testELBV2Rows[2].VLANNetworkID),
+			LoadBalancerName: aws.String(testELBV2Rows[2].UniqueAssetIdentifier),
+			LoadBalancerArn:  aws.String(testELBV2Rows[2].SerialAssetTagNumber),
+			DNSName:          aws.String(testELBV2Rows[2].DNSNameOrURL),
+			Type:             aws.String("application"),
+			Scheme:           aws.String("internal"),
+			VpcId:            aws.String(testELBV2Rows[2].VLANNetworkID),
 		},
 	},
 }
@@ -77,7 +83,7 @@ type ELBV2Mock struct {
 }
 
 func (e ELBV2Mock) DescribeLoadBalancers(cfg *elbv2.DescribeLoadBalancersInput) (*elbv2.DescribeLoadBalancersOutput, error) {
-	return testELBV2Output, nil
+	return testELBV2DescribeLoadBalancersOutput, nil
 }
 
 type ELBV2ErrorMock struct {

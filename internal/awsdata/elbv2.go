@@ -27,15 +27,32 @@ func (d *AWSData) loadELBV2s(region string) {
 		"region":  region,
 		"service": ServiceELBV2,
 	})
+
 	log.Info("loading data")
-	out, err := elbv2Svc.DescribeLoadBalancers(&elbv2.DescribeLoadBalancersInput{})
-	if err != nil {
-		d.results <- result{Err: err}
-		return
+
+	var loadBalancers []*elbv2.LoadBalancer
+	done := false
+	params := &elbv2.DescribeLoadBalancersInput{}
+	for !done {
+		out, err := elbv2Svc.DescribeLoadBalancers(params)
+
+		if err != nil {
+			d.results <- result{Err: err}
+			return
+		}
+
+		loadBalancers = append(loadBalancers, out.LoadBalancers...)
+
+		if out.NextMarker == nil {
+			done = true
+		} else {
+			params.Marker = out.NextMarker
+		}
 	}
 
 	log.Info("processing data")
-	for _, l := range out.LoadBalancers {
+
+	for _, l := range loadBalancers {
 		var assettype string
 		if aws.StringValue(l.Type) == "application" {
 			assettype = AssetTypeALB
@@ -58,6 +75,7 @@ func (d *AWSData) loadELBV2s(region string) {
 				DNSNameOrURL:          aws.StringValue(l.DNSName),
 				Location:              region,
 				AssetType:             assettype,
+				SerialAssetTagNumber:  aws.StringValue(l.LoadBalancerArn),
 				VLANNetworkID:         aws.StringValue(l.VpcId),
 			},
 		}

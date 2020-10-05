@@ -102,7 +102,7 @@ var testElastiCacheNodeRows = []inventory.Row{
 }
 
 // Test Data
-var testElastiCacheNodeOutput = &elasticache.DescribeCacheClustersOutput{
+var testElastiCacheDescribeCacheClustersOutput = &elasticache.DescribeCacheClustersOutput{
 	CacheClusters: []*elasticache.CacheCluster{
 		{
 			ARN:                  aws.String(testElastiCacheNodeRows[0].SerialAssetTagNumber),
@@ -182,11 +182,11 @@ var testElastiCacheNodeOutput = &elasticache.DescribeCacheClustersOutput{
 	},
 }
 
-var testElastiCacheSubnetGroupOutput = &elasticache.DescribeCacheSubnetGroupsOutput{
+var testElastiCacheDescribeCacheSubnetGroupOutput = &elasticache.DescribeCacheSubnetGroupsOutput{
 	CacheSubnetGroups: []*elasticache.CacheSubnetGroup{
 		{
 			CacheSubnetGroupName: aws.String("cache-subnet-group"),
-			VpcId: aws.String(testElastiCacheNodeRows[0].VLANNetworkID),
+			VpcId:                aws.String(testElastiCacheNodeRows[0].VLANNetworkID),
 		},
 	},
 }
@@ -197,11 +197,11 @@ type ElastiCacheMock struct {
 }
 
 func (e ElastiCacheMock) DescribeCacheClusters(cfg *elasticache.DescribeCacheClustersInput) (*elasticache.DescribeCacheClustersOutput, error) {
-	return testElastiCacheNodeOutput, nil
+	return testElastiCacheDescribeCacheClustersOutput, nil
 }
 
 func (e ElastiCacheMock) DescribeCacheSubnetGroups(cfg *elasticache.DescribeCacheSubnetGroupsInput) (*elasticache.DescribeCacheSubnetGroupsOutput, error) {
-	return testElastiCacheSubnetGroupOutput, nil
+	return testElastiCacheDescribeCacheSubnetGroupOutput, nil
 }
 
 type ElastiCacheErrorMock struct {

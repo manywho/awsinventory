@@ -114,11 +114,6 @@ func (d *AWSData) Load(regions, services []string) {
 		go d.loadIAMUsers()
 	}
 
-	if stringInSlice(ServiceS3, services) {
-		d.wg.Add(1)
-		go d.loadS3Buckets()
-	}
-
 	// Regional Services
 	for _, region := range regions {
 		if stringInSlice(ServiceEC2, services) {
@@ -159,6 +154,11 @@ func (d *AWSData) Load(regions, services []string) {
 		if stringInSlice(ServiceRDS, services) {
 			d.wg.Add(1)
 			go d.loadRDSInstances(region)
+		}
+
+		if stringInSlice(ServiceS3, services) {
+			d.wg.Add(1)
+			go d.loadS3Buckets(region)
 		}
 	}
 
@@ -264,19 +264,12 @@ func AppendIfMissing(slice []string, s string) []string {
 }
 
 func hasRegionalServices(services []string) bool {
-	var regionalServices = []string{
-		ServiceEBS,
-		ServiceEC2,
-		ServiceECS,
-		ServiceElastiCache,
-		ServiceElasticsearchService,
-		ServiceELB,
-		ServiceELBV2,
-		ServiceRDS,
+	var globalServices = []string{
+		ServiceIAM,
 	}
 
 	for _, service := range services {
-		if stringInSlice(service, regionalServices) {
+		if !stringInSlice(service, globalServices) {
 			return true
 		}
 	}

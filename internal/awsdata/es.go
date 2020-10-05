@@ -26,7 +26,9 @@ func (d *AWSData) loadElasticsearchDomains(region string) {
 		"region":  region,
 		"service": ServiceElasticsearchService,
 	})
+
 	log.Info("loading data")
+
 	out, err := elasticsearchserviceSvc.ListDomainNames(&elasticsearchservice.ListDomainNamesInput{})
 	if err != nil {
 		d.results <- result{Err: err}
@@ -39,6 +41,7 @@ func (d *AWSData) loadElasticsearchDomains(region string) {
 	}
 
 	log.Info("processing data")
+
 	// API call only accepts 5 domains at a time
 	for i := 0; i+1 < len(domains); i += 5 {
 		var j int = i + 5

@@ -1,9 +1,11 @@
 package awsdata
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
@@ -26,8 +28,28 @@ func (d *AWSData) loadEC2Instances(region string) {
 		"region":  region,
 		"service": ServiceEC2,
 	})
-	log.Info("loading instance data")
-	out, err := ec2Svc.DescribeInstances(&ec2.DescribeInstancesInput{
+
+	log.Info("loading data")
+
+	var partition string
+	if p, ok := endpoints.PartitionForRegion(endpoints.DefaultPartitions(), region); ok {
+		partition = p.ID()
+	}
+
+	var accountId string
+	out, err := ec2Svc.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
+		MaxResults: aws.Int64(5),
+	})
+	if err != nil {
+		d.results <- result{Err: err}
+		return
+	} else if len(out.SecurityGroups) > 0 {
+		accountId = aws.StringValue(out.SecurityGroups[0].OwnerId)
+	}
+
+	var reservations []*ec2.Reservation
+	done := false
+	params := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
 			{
 				Name: aws.String("instance-state-name"),
@@ -38,24 +60,36 @@ func (d *AWSData) loadEC2Instances(region string) {
 				},
 			},
 		},
-	})
-	if err != nil {
-		d.results <- result{Err: err}
-		return
 	}
+	for !done {
+		out, err := ec2Svc.DescribeInstances(params)
+		if err != nil {
+			d.results <- result{Err: err}
+			return
+		}
 
-	log.Info("processing instance data")
-	for _, r := range out.Reservations {
-		for _, i := range r.Instances {
-			d.wg.Add(1)
-			go d.processEC2Instance(i, region)
+		reservations = append(reservations, out.Reservations...)
+
+		if out.NextToken == nil {
+			done = true
+		} else {
+			params.NextToken = out.NextToken
 		}
 	}
 
-	log.Info("finished processing instance data")
+	log.Info("processing data")
+
+	for _, r := range reservations {
+		for _, i := range r.Instances {
+			d.wg.Add(1)
+			go d.processEC2Instance(i, accountId, region, partition)
+		}
+	}
+
+	log.Info("finished processing data")
 }
 
-func (d *AWSData) processEC2Instance(i *ec2.Instance, region string) {
+func (d *AWSData) processEC2Instance(i *ec2.Instance, accountId string, region string, partition string) {
 	defer d.wg.Done()
 
 	var name string
@@ -103,6 +137,7 @@ func (d *AWSData) processEC2Instance(i *ec2.Instance, region string) {
 			AssetType:                 AssetTypeEC2Instance,
 			HardwareMakeModel:         aws.StringValue(i.InstanceType),
 			Function:                  name,
+			SerialAssetTagNumber:      fmt.Sprintf("arn:%s:ec2:%s:%s:instance/%s", partition, region, accountId, aws.StringValue(i.InstanceId)),
 			VLANNetworkID:             aws.StringValue(i.VpcId),
 		},
 	}

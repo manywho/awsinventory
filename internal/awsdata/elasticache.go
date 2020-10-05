@@ -26,7 +26,9 @@ func (d *AWSData) loadElastiCacheNodes(region string) {
 		"region":  region,
 		"service": ServiceElastiCache,
 	})
+
 	log.Info("loading data")
+
 	var cacheClusters []*elasticache.CacheCluster
 	done := false
 	params := &elasticache.DescribeCacheClustersInput{
@@ -49,6 +51,7 @@ func (d *AWSData) loadElastiCacheNodes(region string) {
 	}
 
 	log.Info("processing data")
+
 	for _, c := range cacheClusters {
 		var vpcId string
 		groups, err := elasticacheSvc.DescribeCacheSubnetGroups(&elasticache.DescribeCacheSubnetGroupsInput{
@@ -76,8 +79,8 @@ func (d *AWSData) loadElastiCacheNodes(region string) {
 					SerialAssetTagNumber:           aws.StringValue(c.ARN),
 					VLANNetworkID:                  vpcId,
 				},
-		  }
-	  }
+			}
+		}
 	}
 
 	log.Info("finished processing data")
