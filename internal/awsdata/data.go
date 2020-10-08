@@ -110,6 +110,7 @@ func (d *AWSData) Load(regions, services []string) {
 
 	// Global services
 	if stringInSlice(ServiceIAM, services) {
+		d.log.Debug("including IAM service")
 		d.wg.Add(1)
 		go d.loadIAMUsers()
 	}
@@ -117,46 +118,55 @@ func (d *AWSData) Load(regions, services []string) {
 	// Regional Services
 	for _, region := range regions {
 		if stringInSlice(ServiceEC2, services) {
+			d.log.Debug("including EC2 service")
 			d.wg.Add(1)
 			go d.loadEC2Instances(region)
 		}
 
 		if stringInSlice(ServiceECS, services) {
+			d.log.Debug("including ECS service")
 			d.wg.Add(1)
 			go d.loadECSContainers(region)
 		}
 
 		if stringInSlice(ServiceEBS, services) {
+			d.log.Debug("including EBS service")
 			d.wg.Add(1)
 			go d.loadEBSVolumes(region)
 		}
 
 		if stringInSlice(ServiceElastiCache, services) {
+			d.log.Debug("including ElastiCache service")
 			d.wg.Add(1)
 			go d.loadElastiCacheNodes(region)
 		}
 
 		if stringInSlice(ServiceElasticsearchService, services) {
+			d.log.Debug("including Elasticsearch service")
 			d.wg.Add(1)
 			go d.loadElasticsearchDomains(region)
 		}
 
 		if stringInSlice(ServiceELB, services) {
+			d.log.Debug("including ELB service")
 			d.wg.Add(1)
 			go d.loadELBs(region)
 		}
 
 		if stringInSlice(ServiceELBV2, services) {
+			d.log.Debug("including ELB v2 service")
 			d.wg.Add(1)
 			go d.loadELBV2s(region)
 		}
 
 		if stringInSlice(ServiceRDS, services) {
+			d.log.Debug("including RDS service")
 			d.wg.Add(1)
 			go d.loadRDSInstances(region)
 		}
 
 		if stringInSlice(ServiceS3, services) {
+			d.log.Debug("including S3 service")
 			d.wg.Add(1)
 			go d.loadS3Buckets(region)
 		}
@@ -184,22 +194,24 @@ func (d *AWSData) startWorker() {
 			return
 		}
 		if res.Err != nil {
-			d.log.Debugf("worker received an error")
 			d.log.Error(res.Err)
 		} else {
-			d.log.Debugf("worker received a row")
+			d.log.Debugf("worker received an %s: %s", res.Row.AssetType, res.Row.UniqueAssetIdentifier)
 			d.appendRow(res.Row)
 		}
 	}
 }
 
 func (d *AWSData) loadRoute53Data() {
-	d.log.Info("loading route53 data")
 	r53 := d.clients.GetRoute53Client(DefaultRegion)
+	d.log.Info("loading hosted zones")
 	zones, err := r53.ListHostedZones(&route53.ListHostedZonesInput{})
 	if err != nil {
 		d.log.Fatal(err)
 	}
+
+	d.log.Infof("found %d hosted zones", len(zones.HostedZones))
+
 	var sets []*route53.ResourceRecordSet
 
 	var lock sync.Mutex
@@ -207,7 +219,7 @@ func (d *AWSData) loadRoute53Data() {
 	for _, z := range zones.HostedZones {
 		wg.Add(1)
 		go func(zone *route53.HostedZone) {
-			d.log.Debugf("loading route53 records for hosted zone %s", aws.StringValue(zone.Name))
+			d.log.Infof("loading route53 records for hosted zone %s", aws.StringValue(zone.Name))
 
 			r53Client := d.clients.GetRoute53Client(DefaultRegion)
 
@@ -217,6 +229,8 @@ func (d *AWSData) loadRoute53Data() {
 			if err != nil {
 				d.log.Fatal(err)
 			}
+
+			d.log.Infof("found %d records in hosted zone %s", len(out.ResourceRecordSets), aws.StringValue(zone.Name))
 
 			lock.Lock()
 			sets = append(sets, out.ResourceRecordSets...)
