@@ -1,6 +1,7 @@
 package awsdata
 
 import (
+	"fmt"
 	"sort"
 	"sync"
 
@@ -56,6 +57,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 
 	// List of valid AWS services to gather data from
 	var services = []string{
+		ServiceDynamoDB,
 		ServiceEBS,
 		ServiceEC2,
 		ServiceECS,
@@ -117,6 +119,12 @@ func (d *AWSData) Load(regions, services []string) {
 
 	// Regional Services
 	for _, region := range regions {
+		if stringInSlice(ServiceDynamoDB, services) {
+			d.log.Debug("including DynamoDB service")
+			d.wg.Add(1)
+			go d.loadDynamoDBTables(region)
+		}
+
 		if stringInSlice(ServiceEC2, services) {
 			d.log.Debug("including EC2 service")
 			d.wg.Add(1)
@@ -275,6 +283,19 @@ func AppendIfMissing(slice []string, s string) []string {
 		}
 	}
 	return append(slice, s)
+}
+
+func HumanReadableBytes(b int64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "kMGTPE"[exp])
 }
 
 func hasRegionalServices(services []string) bool {

@@ -3,6 +3,7 @@ package awsdata_test
 import (
 	"errors"
 
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 	"github.com/aws/aws-sdk-go/service/elasticache/elasticacheiface"
@@ -18,6 +19,7 @@ import (
 var testError = errors.New("test aws error")
 
 type TestClients struct {
+	DynamoDB             dynamodbiface.DynamoDBAPI
 	EC2                  ec2iface.EC2API
 	ECS                  ecsiface.ECSAPI
 	ElastiCache          elasticacheiface.ElastiCacheAPI
@@ -28,6 +30,10 @@ type TestClients struct {
 	RDS                  rdsiface.RDSAPI
 	Route53              route53iface.Route53API
 	S3                   s3iface.S3API
+}
+
+func (c TestClients) GetDynamoDBClient(region string) dynamodbiface.DynamoDBAPI {
+	return c.DynamoDB
 }
 
 func (c TestClients) GetEC2Client(region string) ec2iface.EC2API {

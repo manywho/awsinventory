@@ -3,6 +3,8 @@ package awsdata
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ecs"
@@ -27,6 +29,7 @@ import (
 
 // Clients is an interface for getting new AWS service clients
 type Clients interface {
+	GetDynamoDBClient(region string) dynamodbiface.DynamoDBAPI
 	GetEC2Client(region string) ec2iface.EC2API
 	GetECSClient(region string) ecsiface.ECSAPI
 	GetElastiCacheClient(region string) elasticacheiface.ElastiCacheAPI
@@ -41,6 +44,11 @@ type Clients interface {
 
 // DefaultClients holds the default methods for creating AWS service clients
 type DefaultClients struct{}
+
+// GetDynamoDBClient returns a new DynamoDB client for the given region
+func (c DefaultClients) GetDynamoDBClient(region string) dynamodbiface.DynamoDBAPI {
+	return dynamodb.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+}
 
 // GetEC2Client returns a new EC2 client for the given region
 func (c DefaultClients) GetEC2Client(region string) ec2iface.EC2API {
