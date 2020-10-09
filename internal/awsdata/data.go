@@ -49,7 +49,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 	resolver := endpoints.DefaultResolver()
 	partitions := resolver.(endpoints.EnumPartitions).Partitions()
 	for _, p := range partitions {
-		for id, _ := range p.Regions() {
+		for id := range p.Regions() {
 			regions = append(regions, id)
 		}
 	}
@@ -178,6 +178,7 @@ func (d *AWSData) Load(regions, services []string) {
 	<-d.done
 }
 
+// PrintRegions lists all available AWS regions as used by the command line `print-regions` option
 func (d *AWSData) PrintRegions() {
 	for _, r := range d.validRegions {
 		println(r)
@@ -250,6 +251,7 @@ func (d *AWSData) appendRow(row inventory.Row) {
 	d.lock.Unlock()
 }
 
+// SortRows takes all the rows in the inventory and sorts based on the UniqueAssetIdentifier (generally, the ARN)
 func (d *AWSData) SortRows() {
 	d.lock.Lock()
 	sort.SliceStable(d.rows, func(i, j int) bool {
@@ -268,6 +270,7 @@ func stringInSlice(needle string, haystack []string) bool {
 	return false
 }
 
+// AppendIfMissing only add a string to a slice if it isn't already present
 func AppendIfMissing(slice []string, s string) []string {
 	for _, ele := range slice {
 		if ele == s {

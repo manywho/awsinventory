@@ -74,7 +74,7 @@ var testEC2Route53HostedZonesOutput = &route53.ListHostedZonesOutput{
 
 var testEC2Route53RecordSetsOutput = &route53.ListResourceRecordSetsOutput{
 	ResourceRecordSets: []*route53.ResourceRecordSet{
-		&route53.ResourceRecordSet{
+		{
 			Type: aws.String("A"),
 			Name: aws.String(testEC2InstanceRows[0].DNSNameOrURL),
 			ResourceRecords: []*route53.ResourceRecord{

@@ -36,7 +36,7 @@ func (d *AWSData) loadEC2Instances(region string) {
 		partition = p.ID()
 	}
 
-	var accountId string
+	var accountID string
 	out, err := ec2Svc.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
 		MaxResults: aws.Int64(5),
 	})
@@ -44,7 +44,7 @@ func (d *AWSData) loadEC2Instances(region string) {
 		d.results <- result{Err: err}
 		return
 	} else if len(out.SecurityGroups) > 0 {
-		accountId = aws.StringValue(out.SecurityGroups[0].OwnerId)
+		accountID = aws.StringValue(out.SecurityGroups[0].OwnerId)
 	}
 
 	var reservations []*ec2.Reservation
@@ -82,14 +82,14 @@ func (d *AWSData) loadEC2Instances(region string) {
 	for _, r := range reservations {
 		for _, i := range r.Instances {
 			d.wg.Add(1)
-			go d.processEC2Instance(i, accountId, region, partition)
+			go d.processEC2Instance(i, accountID, region, partition)
 		}
 	}
 
 	log.Info("finished processing data")
 }
 
-func (d *AWSData) processEC2Instance(i *ec2.Instance, accountId string, region string, partition string) {
+func (d *AWSData) processEC2Instance(i *ec2.Instance, accountID string, region string, partition string) {
 	defer d.wg.Done()
 
 	var name string
@@ -137,7 +137,7 @@ func (d *AWSData) processEC2Instance(i *ec2.Instance, accountId string, region s
 			AssetType:                 AssetTypeEC2Instance,
 			HardwareMakeModel:         aws.StringValue(i.InstanceType),
 			Function:                  name,
-			SerialAssetTagNumber:      fmt.Sprintf("arn:%s:ec2:%s:%s:instance/%s", partition, region, accountId, aws.StringValue(i.InstanceId)),
+			SerialAssetTagNumber:      fmt.Sprintf("arn:%s:ec2:%s:%s:instance/%s", partition, region, accountID, aws.StringValue(i.InstanceId)),
 			VLANNetworkID:             aws.StringValue(i.VpcId),
 		},
 	}

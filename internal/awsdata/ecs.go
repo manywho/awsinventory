@@ -141,14 +141,14 @@ func (d *AWSData) processECSContainer(container *ecs.Container, task *ecs.Task, 
 		hardware = fmt.Sprintf("%s %s", hardware, aws.StringValue(task.PlatformVersion))
 	}
 
-	var vpcId string
+	var vpcID string
 	out, err := ec2Svc.DescribeNetworkInterfaces(&ec2.DescribeNetworkInterfacesInput{
 		NetworkInterfaceIds: aws.StringSlice(networkInterfaces),
 	})
 	if err != nil {
 		d.results <- result{Err: err}
 	} else if len(out.NetworkInterfaces) > 0 {
-		vpcId = aws.StringValue(out.NetworkInterfaces[0].VpcId)
+		vpcID = aws.StringValue(out.NetworkInterfaces[0].VpcId)
 	}
 
 	d.results <- result{
@@ -163,7 +163,7 @@ func (d *AWSData) processECSContainer(container *ecs.Container, task *ecs.Task, 
 			HardwareMakeModel:         hardware,
 			Function:                  fmt.Sprintf("%s %s", aws.StringValue(cluster.ClusterName), aws.StringValue(task.Group)),
 			SerialAssetTagNumber:      aws.StringValue(container.ContainerArn),
-			VLANNetworkID:             vpcId,
+			VLANNetworkID:             vpcID,
 		},
 	}
 }

@@ -53,14 +53,14 @@ func (d *AWSData) loadElastiCacheNodes(region string) {
 	log.Info("processing data")
 
 	for _, c := range cacheClusters {
-		var vpcId string
+		var vpcID string
 		groups, err := elasticacheSvc.DescribeCacheSubnetGroups(&elasticache.DescribeCacheSubnetGroupsInput{
 			CacheSubnetGroupName: c.CacheSubnetGroupName,
 		})
 		if err != nil {
 			d.results <- result{Err: err}
 		} else if len(groups.CacheSubnetGroups) > 0 {
-			vpcId = aws.StringValue(groups.CacheSubnetGroups[0].VpcId)
+			vpcID = aws.StringValue(groups.CacheSubnetGroups[0].VpcId)
 		}
 
 		for _, n := range c.CacheNodes {
@@ -77,7 +77,7 @@ func (d *AWSData) loadElastiCacheNodes(region string) {
 					SoftwareDatabaseVendor:         aws.StringValue(c.Engine),
 					SoftwareDatabaseNameAndVersion: fmt.Sprintf("%s %s", aws.StringValue(c.Engine), aws.StringValue(c.EngineVersion)),
 					SerialAssetTagNumber:           aws.StringValue(c.ARN),
-					VLANNetworkID:                  vpcId,
+					VLANNetworkID:                  vpcID,
 				},
 			}
 		}

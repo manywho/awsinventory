@@ -37,7 +37,7 @@ func (d *AWSData) loadELBs(region string) {
 		partition = p.ID()
 	}
 
-	var accountId string
+	var accountID string
 	out, err := ec2Svc.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
 		MaxResults: aws.Int64(5),
 	})
@@ -45,7 +45,7 @@ func (d *AWSData) loadELBs(region string) {
 		d.results <- result{Err: err}
 		return
 	} else if len(out.SecurityGroups) > 0 {
-		accountId = aws.StringValue(out.SecurityGroups[0].OwnerId)
+		accountID = aws.StringValue(out.SecurityGroups[0].OwnerId)
 	}
 
 	var loadBalancers []*elb.LoadBalancerDescription
@@ -87,7 +87,7 @@ func (d *AWSData) loadELBs(region string) {
 				Location:              region,
 				AssetType:             AssetTypeELB,
 				Function:              aws.StringValue(l.CanonicalHostedZoneName),
-				SerialAssetTagNumber:  fmt.Sprintf("arn:%s:elasticloadbalancing:%s:%s:loadbalancer/%s", partition, region, accountId, aws.StringValue(l.LoadBalancerName)),
+				SerialAssetTagNumber:  fmt.Sprintf("arn:%s:elasticloadbalancing:%s:%s:loadbalancer/%s", partition, region, accountID, aws.StringValue(l.LoadBalancerName)),
 				VLANNetworkID:         aws.StringValue(l.VPCId),
 			},
 		}
