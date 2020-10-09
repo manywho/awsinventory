@@ -45,10 +45,18 @@ var testDynamoDBTableRows = []inventory.Row{
 }
 
 // Test Data
-var testDynamoDBListTablesOutput = &dynamodb.ListTablesOutput{
+var testDynamoDBListTablesOutputPage1 = &dynamodb.ListTablesOutput{
+    LastEvaluatedTableName: aws.String(testDynamoDBTableRows[1].UniqueAssetIdentifier),
 	TableNames: []*string{
 		aws.String(testDynamoDBTableRows[0].UniqueAssetIdentifier),
 		aws.String(testDynamoDBTableRows[1].UniqueAssetIdentifier),
+	},
+}
+
+
+var testDynamoDBListTablesOutputPage2 = &dynamodb.ListTablesOutput{
+    LastEvaluatedTableName: nil,
+	TableNames: []*string{
 		aws.String(testDynamoDBTableRows[2].UniqueAssetIdentifier),
 	},
 }
@@ -59,7 +67,11 @@ type DynamoDBMock struct {
 }
 
 func (e DynamoDBMock) ListTables(cfg *dynamodb.ListTablesInput) (*dynamodb.ListTablesOutput, error) {
-	return testDynamoDBListTablesOutput, nil
+    if cfg.ExclusiveStartTableName == nil {
+        return testDynamoDBListTablesOutputPage1, nil
+    }
+
+	return testDynamoDBListTablesOutputPage2, nil
 }
 
 func (e DynamoDBMock) DescribeTable(cfg *dynamodb.DescribeTableInput) (*dynamodb.DescribeTableOutput, error) {
