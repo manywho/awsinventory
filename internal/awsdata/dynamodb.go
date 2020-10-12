@@ -65,7 +65,7 @@ func (d *AWSData) loadDynamoDBTables(region string) {
 				Location:               region,
 				AssetType:              AssetTypeDynamoDBTable,
 				SoftwareDatabaseVendor: "Amazon",
-				Comments:               HumanReadableBytes(aws.Int64Value(out.Table.TableSizeBytes)),
+				Comments:               humanReadableBytes(aws.Int64Value(out.Table.TableSizeBytes)),
 				SerialAssetTagNumber:   aws.StringValue(out.Table.TableArn),
 			},
 		}

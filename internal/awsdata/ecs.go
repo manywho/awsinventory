@@ -132,8 +132,8 @@ func (d *AWSData) processECSContainer(container *ecs.Container, task *ecs.Task, 
 	}
 
 	for _, networkInterface := range container.NetworkInterfaces {
-		ips = AppendIfMissing(ips, aws.StringValue(networkInterface.PrivateIpv4Address))
-		ips = AppendIfMissing(ips, aws.StringValue(networkInterface.Ipv6Address))
+		ips = appendIfMissing(ips, aws.StringValue(networkInterface.PrivateIpv4Address))
+		ips = appendIfMissing(ips, aws.StringValue(networkInterface.Ipv6Address))
 	}
 
 	var hardware = aws.StringValue(task.LaunchType)
