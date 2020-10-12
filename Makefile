@@ -21,7 +21,7 @@ build:
 ci:
 	test $$(gofmt -l . | wc -l) -eq 0
 	golint -set_exit_status ./...
-	#./scripts/codecov.sh
+	./scripts/codecov.sh
 
 clean:
 	rm build/awsinventory-*
