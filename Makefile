@@ -1,6 +1,5 @@
 .PHONY: build ci release test test-full
 
-
 BINARY=awsinventory
 PLATFORMS=linux darwin windows
 ARCHITECTURES=amd64 386
@@ -20,7 +19,9 @@ build:
 	go build $(LDFLAGS) -o awsinventory $(BUILD_DIR)
 
 ci:
-	./scripts/codecov.sh
+	test $$(gofmt -l . | wc -l) -eq 0
+	golint -set_exit_status ./...
+	#./scripts/codecov.sh
 
 clean:
 	rm build/awsinventory-*
