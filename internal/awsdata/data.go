@@ -278,8 +278,7 @@ func stringInSlice(needle string, haystack []string) bool {
 	return false
 }
 
-// AppendIfMissing only add a string to a slice if it isn't already present
-func AppendIfMissing(slice []string, s string) []string {
+func appendIfMissing(slice []string, s string) []string {
 	for _, ele := range slice {
 		if ele == s {
 			return slice
@@ -288,7 +287,7 @@ func AppendIfMissing(slice []string, s string) []string {
 	return append(slice, s)
 }
 
-func HumanReadableBytes(b int64) string {
+func humanReadableBytes(b int64) string {
 	const unit = 1024
 	if b < unit {
 		return fmt.Sprintf("%d B", b)
