@@ -19,6 +19,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/lambda"
+	"github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -37,6 +39,7 @@ type Clients interface {
 	GetELBClient(region string) elbiface.ELBAPI
 	GetELBV2Client(region string) elbv2iface.ELBV2API
 	GetIAMClient(region string) iamiface.IAMAPI
+	GetLambdaClient(region string) lambdaiface.LambdaAPI
 	GetRDSClient(region string) rdsiface.RDSAPI
 	GetRoute53Client(region string) route53iface.Route53API
 	GetS3Client(region string) s3iface.S3API
@@ -83,6 +86,11 @@ func (c DefaultClients) GetELBV2Client(region string) elbv2iface.ELBV2API {
 // GetIAMClient returns a new IAM client for the given region
 func (c DefaultClients) GetIAMClient(region string) iamiface.IAMAPI {
 	return iam.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+}
+
+// GetLambdaClient returns a new RDS client for the given region
+func (c DefaultClients) GetLambdaClient(region string) lambdaiface.LambdaAPI {
+	return lambda.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
 }
 
 // GetRDSClient returns a new RDS client for the given region

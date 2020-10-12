@@ -66,6 +66,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 		ServiceELB,
 		ServiceELBV2,
 		ServiceIAM,
+		ServiceLambda,
 		ServiceRDS,
 		ServiceS3,
 	}
@@ -165,6 +166,12 @@ func (d *AWSData) Load(regions, services []string) {
 			d.log.Debug("including ELB v2 service")
 			d.wg.Add(1)
 			go d.loadELBV2s(region)
+		}
+
+		if stringInSlice(ServiceLambda, services) {
+			d.log.Debug("including Lambda service")
+			d.wg.Add(1)
+			go d.loadLambdaFunctions(region)
 		}
 
 		if stringInSlice(ServiceRDS, services) {
