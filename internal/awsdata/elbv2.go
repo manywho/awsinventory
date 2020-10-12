@@ -14,7 +14,7 @@ const (
 	// AssetTypeNLB is the value used in the AssetType field when fetching NLBs
 	AssetTypeNLB string = "NLB"
 
-	// ServiceELBv2 is the key for the ELBV2 service
+	// ServiceELBV2 is the key for the ELBV2 service
 	ServiceELBV2 string = "elbv2"
 )
 

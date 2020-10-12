@@ -8,16 +8,19 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 )
 
+// Cache for Route53 DNS record lookups
 type Cache struct {
 	records []*route53.ResourceRecordSet
 }
 
+// New creates cache for the provided Route53 records
 func New(records []*route53.ResourceRecordSet) *Cache {
 	return &Cache{
 		records: records,
 	}
 }
 
+// FindRecordsForInstance looks for and returns DNS records for a specific EC2 instance
 func (c *Cache) FindRecordsForInstance(i *ec2.Instance) (results []string) {
 	for _, r := range c.records {
 		switch aws.StringValue(r.Type) {

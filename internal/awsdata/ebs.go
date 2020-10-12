@@ -35,7 +35,7 @@ func (d *AWSData) loadEBSVolumes(region string) {
 		partition = p.ID()
 	}
 
-	var accountId string
+	var accountID string
 	out, err := ec2Svc.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
 		MaxResults: aws.Int64(5),
 	})
@@ -43,7 +43,7 @@ func (d *AWSData) loadEBSVolumes(region string) {
 		d.results <- result{Err: err}
 		return
 	} else if len(out.SecurityGroups) > 0 {
-		accountId = aws.StringValue(out.SecurityGroups[0].OwnerId)
+		accountID = aws.StringValue(out.SecurityGroups[0].OwnerId)
 	}
 
 	var volumes []*ec2.Volume
@@ -83,7 +83,7 @@ func (d *AWSData) loadEBSVolumes(region string) {
 				AssetType:             AssetTypeEBSVolume,
 				HardwareMakeModel:     fmt.Sprintf("%s (%dGB)", aws.StringValue(v.VolumeType), aws.Int64Value(v.Size)),
 				Function:              name,
-				SerialAssetTagNumber:  fmt.Sprintf("arn:%s:ec2:%s:%s:volume/%s", partition, region, accountId, aws.StringValue(v.VolumeId)),
+				SerialAssetTagNumber:  fmt.Sprintf("arn:%s:ec2:%s:%s:volume/%s", partition, region, accountID, aws.StringValue(v.VolumeId)),
 			},
 		}
 	}

@@ -20,7 +20,7 @@ var testDomains = []string{
 }
 
 var testRecords = []*route53.ResourceRecordSet{
-	&route53.ResourceRecordSet{
+	{
 		Type: aws.String("CNAME"),
 		Name: aws.String(testDomains[0]),
 		ResourceRecords: []*route53.ResourceRecord{
@@ -29,7 +29,7 @@ var testRecords = []*route53.ResourceRecordSet{
 			},
 		},
 	},
-	&route53.ResourceRecordSet{
+	{
 		Type: aws.String("CNAME"),
 		Name: aws.String(testDomains[1]),
 		ResourceRecords: []*route53.ResourceRecord{
@@ -38,7 +38,7 @@ var testRecords = []*route53.ResourceRecordSet{
 			},
 		},
 	},
-	&route53.ResourceRecordSet{
+	{
 		Type: aws.String("A"),
 		Name: aws.String(testDomains[2]),
 		ResourceRecords: []*route53.ResourceRecord{
@@ -47,7 +47,7 @@ var testRecords = []*route53.ResourceRecordSet{
 			},
 		},
 	},
-	&route53.ResourceRecordSet{
+	{
 		Type: aws.String("A"),
 		Name: aws.String(testDomains[3]),
 		ResourceRecords: []*route53.ResourceRecord{
@@ -56,7 +56,7 @@ var testRecords = []*route53.ResourceRecordSet{
 			},
 		},
 	},
-	&route53.ResourceRecordSet{
+	{
 		Type: aws.String("A"),
 		Name: aws.String("should-not-be-here.com"),
 		ResourceRecords: []*route53.ResourceRecord{
