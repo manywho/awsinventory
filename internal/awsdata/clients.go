@@ -31,6 +31,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 )
 
 // Clients is an interface for getting new AWS service clients
@@ -49,6 +51,7 @@ type Clients interface {
 	GetRDSClient(region string) rdsiface.RDSAPI
 	GetRoute53Client(region string) route53iface.Route53API
 	GetS3Client(region string) s3iface.S3API
+	GetSQSClient(region string) sqsiface.SQSAPI
 }
 
 // DefaultClients holds the default methods for creating AWS service clients
@@ -122,4 +125,9 @@ func (c DefaultClients) GetRoute53Client(region string) route53iface.Route53API 
 // GetS3Client returns a new S3 client for the given region
 func (c DefaultClients) GetS3Client(region string) s3iface.S3API {
 	return s3.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+}
+
+// GetSQSClient returns a new SQS client for the given region
+func (c DefaultClients) GetSQSClient(region string) sqsiface.SQSAPI {
+	return sqs.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 )
 
 var testError = errors.New("test aws error")
@@ -36,6 +37,7 @@ type TestClients struct {
 	RDS                  rdsiface.RDSAPI
 	Route53              route53iface.Route53API
 	S3                   s3iface.S3API
+	SQS                  sqsiface.SQSAPI
 }
 
 func (c TestClients) GetCloudFrontClient(region string) cloudfrontiface.CloudFrontAPI {
@@ -92,4 +94,8 @@ func (c TestClients) GetRoute53Client(region string) route53iface.Route53API {
 
 func (c TestClients) GetS3Client(region string) s3iface.S3API {
 	return c.S3
+}
+
+func (c TestClients) GetSQSClient(region string) sqsiface.SQSAPI {
+	return c.SQS
 }
