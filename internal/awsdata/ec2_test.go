@@ -70,16 +70,22 @@ var testEC2Route53HostedZonesOutput = &route53.ListHostedZonesOutput{
 			Id: aws.String("ABCDEFGH"),
 		},
 	},
+	IsTruncated: aws.Bool(true),
+	NextMarker:  aws.String("ABCDEFGH"),
 }
 
 var testEC2Route53RecordSetsOutput = &route53.ListResourceRecordSetsOutput{
+	IsTruncated:          aws.Bool(true),
+	NextRecordIdentifier: nil,
+	NextRecordName:       aws.String(testEC2InstanceRows[0].DNSNameOrURL),
+	NextRecordType:       aws.String("A"),
 	ResourceRecordSets: []*route53.ResourceRecordSet{
 		{
 			Type: aws.String("A"),
 			Name: aws.String(testEC2InstanceRows[0].DNSNameOrURL),
 			ResourceRecords: []*route53.ResourceRecord{
 				{
-					Value: testEC2DescribeInstancesOutput.Reservations[0].Instances[0].PublicIpAddress,
+					Value: testEC2DescribeInstancesOutputPage1.Reservations[0].Instances[0].PublicIpAddress,
 				},
 			},
 		},
@@ -94,7 +100,8 @@ var testEC2DescribeSecurityGroupsOutput = &ec2.DescribeSecurityGroupsOutput{
 	},
 }
 
-var testEC2DescribeInstancesOutput = &ec2.DescribeInstancesOutput{
+var testEC2DescribeInstancesOutputPage1 = &ec2.DescribeInstancesOutput{
+	NextToken: aws.String(testEC2InstanceRows[1].UniqueAssetIdentifier),
 	Reservations: []*ec2.Reservation{
 		{
 			Instances: []*ec2.Instance{
@@ -148,6 +155,11 @@ var testEC2DescribeInstancesOutput = &ec2.DescribeInstancesOutput{
 				},
 			},
 		},
+	},
+}
+
+var testEC2DescribeInstancesOutputPage2 = &ec2.DescribeInstancesOutput{
+	Reservations: []*ec2.Reservation{
 		{
 			Instances: []*ec2.Instance{
 				{
@@ -186,7 +198,11 @@ func (e EC2Mock) DescribeSecurityGroups(cfg *ec2.DescribeSecurityGroupsInput) (*
 }
 
 func (e EC2Mock) DescribeInstances(cfg *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
-	return testEC2DescribeInstancesOutput, nil
+	if cfg.NextToken == nil {
+		return testEC2DescribeInstancesOutputPage1, nil
+	}
+
+	return testEC2DescribeInstancesOutputPage2, nil
 }
 
 func (e EC2Mock) DescribeImages(cfg *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
@@ -213,10 +229,18 @@ type EC2Route53Mock struct {
 }
 
 func (e EC2Route53Mock) ListHostedZones(cfg *route53.ListHostedZonesInput) (*route53.ListHostedZonesOutput, error) {
+	if cfg.Marker == testEC2Route53HostedZonesOutput.HostedZones[0].Id {
+		return &route53.ListHostedZonesOutput{}, nil
+	}
+
 	return testEC2Route53HostedZonesOutput, nil
 }
 
 func (e EC2Route53Mock) ListResourceRecordSets(cfg *route53.ListResourceRecordSetsInput) (*route53.ListResourceRecordSetsOutput, error) {
+	if cfg.StartRecordName == aws.String(testEC2InstanceRows[0].DNSNameOrURL) {
+		return &route53.ListResourceRecordSetsOutput{}, nil
+	}
+
 	return testEC2Route53RecordSetsOutput, nil
 }
 

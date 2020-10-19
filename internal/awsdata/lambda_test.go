@@ -57,7 +57,7 @@ var testLambdaFunctionRows = []inventory.Row{
 }
 
 // Test Data
-var testLambdaListFunctionsOutput = &lambda.ListFunctionsOutput{
+var testLambdaListFunctionsOutputPage1 = &lambda.ListFunctionsOutput{
 	Functions: []*lambda.FunctionConfiguration{
 		{
 			Description:  aws.String("lambda function 1"),
@@ -83,6 +83,12 @@ var testLambdaListFunctionsOutput = &lambda.ListFunctionsOutput{
 				VpcId: aws.String(testLambdaFunctionRows[1].VLANNetworkID),
 			},
 		},
+	},
+	NextMarker: aws.String(testLambdaFunctionRows[1].UniqueAssetIdentifier),
+}
+
+var testLambdaListFunctionsOutputPage2 = &lambda.ListFunctionsOutput{
+	Functions: []*lambda.FunctionConfiguration{
 		{
 			Description:  aws.String("lambda function 3"),
 			FunctionArn:  aws.String(testLambdaFunctionRows[2].SerialAssetTagNumber),
@@ -104,7 +110,11 @@ type LambdaMock struct {
 }
 
 func (e LambdaMock) ListFunctions(cfg *lambda.ListFunctionsInput) (*lambda.ListFunctionsOutput, error) {
-	return testLambdaListFunctionsOutput, nil
+	if cfg.Marker == nil {
+		return testLambdaListFunctionsOutputPage1, nil
+	}
+
+	return testLambdaListFunctionsOutputPage2, nil
 }
 
 type LambdaErrorMock struct {

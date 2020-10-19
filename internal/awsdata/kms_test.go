@@ -52,7 +52,7 @@ var testKMSKeyRows = []inventory.Row{
 }
 
 // Test Data
-var testKMSListKeysOutput = &kms.ListKeysOutput{
+var testKMSListKeysOutputPage1 = &kms.ListKeysOutput{
 	Keys: []*kms.KeyListEntry{
 		{
 			KeyId: aws.String(testKMSKeyRows[0].UniqueAssetIdentifier),
@@ -60,6 +60,13 @@ var testKMSListKeysOutput = &kms.ListKeysOutput{
 		{
 			KeyId: aws.String(testKMSKeyRows[1].UniqueAssetIdentifier),
 		},
+	},
+	NextMarker: aws.String(testKMSKeyRows[1].UniqueAssetIdentifier),
+	Truncated:  aws.Bool(true),
+}
+
+var testKMSListKeysOutputPage2 = &kms.ListKeysOutput{
+	Keys: []*kms.KeyListEntry{
 		{
 			KeyId: aws.String(testKMSKeyRows[2].UniqueAssetIdentifier),
 		},
@@ -72,7 +79,11 @@ type KMSMock struct {
 }
 
 func (e KMSMock) ListKeys(cfg *kms.ListKeysInput) (*kms.ListKeysOutput, error) {
-	return testKMSListKeysOutput, nil
+	if cfg.Marker == nil {
+		return testKMSListKeysOutputPage1, nil
+	}
+
+	return testKMSListKeysOutputPage2, nil
 }
 
 func (e KMSMock) DescribeKey(cfg *kms.DescribeKeyInput) (*kms.DescribeKeyOutput, error) {

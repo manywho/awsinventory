@@ -48,8 +48,9 @@ var testCloudFrontDistributionRows = []inventory.Row{
 }
 
 // Test Data
-var testCloudFrontListDistributionsOutput = &cloudfront.ListDistributionsOutput{
+var testCloudFrontListDistributionsOutputPage1 = &cloudfront.ListDistributionsOutput{
 	DistributionList: &cloudfront.DistributionList{
+		IsTruncated: aws.Bool(true),
 		Items: []*cloudfront.DistributionSummary{
 			{
 				Aliases: &cloudfront.Aliases{
@@ -87,6 +88,14 @@ var testCloudFrontListDistributionsOutput = &cloudfront.ListDistributionsOutput{
 					},
 				},
 			},
+		},
+		NextMarker: aws.String(testCloudFrontDistributionRows[1].UniqueAssetIdentifier),
+	},
+}
+
+var testCloudFrontListDistributionsOutputPage2 = &cloudfront.ListDistributionsOutput{
+	DistributionList: &cloudfront.DistributionList{
+		Items: []*cloudfront.DistributionSummary{
 			{
 				Aliases: &cloudfront.Aliases{
 					Items: []*string{},
@@ -107,6 +116,7 @@ var testCloudFrontListDistributionsOutput = &cloudfront.ListDistributionsOutput{
 				},
 			},
 		},
+		Marker: aws.String(testCloudFrontDistributionRows[1].UniqueAssetIdentifier),
 	},
 }
 
@@ -116,7 +126,11 @@ type CloudFrontMock struct {
 }
 
 func (e CloudFrontMock) ListDistributions(cfg *cloudfront.ListDistributionsInput) (*cloudfront.ListDistributionsOutput, error) {
-	return testCloudFrontListDistributionsOutput, nil
+	if cfg.Marker == nil {
+		return testCloudFrontListDistributionsOutputPage1, nil
+	}
+
+	return testCloudFrontListDistributionsOutputPage2, nil
 }
 
 type CloudFrontErrorMock struct {
