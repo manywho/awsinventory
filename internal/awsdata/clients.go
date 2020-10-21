@@ -5,6 +5,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudfront/cloudfrontiface"
+	"github.com/aws/aws-sdk-go/service/codecommit"
+	"github.com/aws/aws-sdk-go/service/codecommit/codecommitiface"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -38,6 +40,7 @@ import (
 // Clients is an interface for getting new AWS service clients
 type Clients interface {
 	GetCloudFrontClient(region string) cloudfrontiface.CloudFrontAPI
+	GetCodeCommitClient(region string) codecommitiface.CodeCommitAPI
 	GetDynamoDBClient(region string) dynamodbiface.DynamoDBAPI
 	GetEC2Client(region string) ec2iface.EC2API
 	GetECSClient(region string) ecsiface.ECSAPI
@@ -60,6 +63,11 @@ type DefaultClients struct{}
 // GetCloudFrontClient returns a new CloudFront client for the given region
 func (c DefaultClients) GetCloudFrontClient(region string) cloudfrontiface.CloudFrontAPI {
 	return cloudfront.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+}
+
+// GetCodeCommitClient returns a new CodeCommit client for the given region
+func (c DefaultClients) GetCodeCommitClient(region string) codecommitiface.CodeCommitAPI {
+	return codecommit.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
 }
 
 // GetDynamoDBClient returns a new DynamoDB client for the given region

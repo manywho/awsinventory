@@ -58,6 +58,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 	// List of valid AWS services to gather data from
 	var services = []string{
 		ServiceCloudFront,
+		ServiceCodeCommit,
 		ServiceDynamoDB,
 		ServiceEBS,
 		ServiceEC2,
@@ -129,10 +130,22 @@ func (d *AWSData) Load(regions, services []string) {
 
 	// Regional Services
 	for _, region := range regions {
+		if stringInSlice(ServiceCodeCommit, services) {
+			d.log.Debug("including CodeCommit service")
+			d.wg.Add(1)
+			go d.loadCodeCommitRepositories(region)
+		}
+
 		if stringInSlice(ServiceDynamoDB, services) {
 			d.log.Debug("including DynamoDB service")
 			d.wg.Add(1)
 			go d.loadDynamoDBTables(region)
+		}
+
+		if stringInSlice(ServiceEBS, services) {
+			d.log.Debug("including EBS service")
+			d.wg.Add(1)
+			go d.loadEBSVolumes(region)
 		}
 
 		if stringInSlice(ServiceEC2, services) {
@@ -145,12 +158,6 @@ func (d *AWSData) Load(regions, services []string) {
 			d.log.Debug("including ECS service")
 			d.wg.Add(1)
 			go d.loadECSContainers(region)
-		}
-
-		if stringInSlice(ServiceEBS, services) {
-			d.log.Debug("including EBS service")
-			d.wg.Add(1)
-			go d.loadEBSVolumes(region)
 		}
 
 		if stringInSlice(ServiceElastiCache, services) {

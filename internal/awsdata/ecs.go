@@ -52,6 +52,11 @@ func (d *AWSData) loadECSContainers(region string) {
 		}
 	}
 
+	if len(clusterArns) == 0 {
+		log.Info("no data found; bailing early")
+		return
+	}
+
 	// TODO: API call can only handle 100 cluster ARNs at a time
 	out, err := ecsSvc.DescribeClusters(&ecs.DescribeClustersInput{
 		Clusters: clusterArns,
@@ -84,6 +89,11 @@ func (d *AWSData) loadECSContainers(region string) {
 			} else {
 				params.NextToken = outListTasks.NextToken
 			}
+		}
+
+		if len(taskArns) == 0 {
+			log.Info("no data found; bailing early")
+			continue
 		}
 
 		// TODO: API call can only handle 100 task ARNs at a time
