@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 	"github.com/aws/aws-sdk-go/service/elasticache"
@@ -43,6 +45,7 @@ type Clients interface {
 	GetCodeCommitClient(region string) codecommitiface.CodeCommitAPI
 	GetDynamoDBClient(region string) dynamodbiface.DynamoDBAPI
 	GetEC2Client(region string) ec2iface.EC2API
+	GetECRClient(region string) ecriface.ECRAPI
 	GetECSClient(region string) ecsiface.ECSAPI
 	GetElastiCacheClient(region string) elasticacheiface.ElastiCacheAPI
 	GetElasticsearchServiceClient(region string) elasticsearchserviceiface.ElasticsearchServiceAPI
@@ -78,6 +81,11 @@ func (c DefaultClients) GetDynamoDBClient(region string) dynamodbiface.DynamoDBA
 // GetEC2Client returns a new EC2 client for the given region
 func (c DefaultClients) GetEC2Client(region string) ec2iface.EC2API {
 	return ec2.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+}
+
+// GetECRClient returns a new ECS client for the given region
+func (c DefaultClients) GetECRClient(region string) ecriface.ECRAPI {
+	return ecr.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
 }
 
 // GetECSClient returns a new ECS client for the given region

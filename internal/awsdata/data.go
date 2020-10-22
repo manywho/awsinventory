@@ -62,6 +62,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 		ServiceDynamoDB,
 		ServiceEBS,
 		ServiceEC2,
+		ServiceECR,
 		ServiceECS,
 		ServiceElastiCache,
 		ServiceElasticsearchService,
@@ -152,6 +153,12 @@ func (d *AWSData) Load(regions, services []string) {
 			d.log.Debug("including EC2 service")
 			d.wg.Add(1)
 			go d.loadEC2Instances(region)
+		}
+
+		if stringInSlice(ServiceECR, services) {
+			d.log.Debug("including ECR service")
+			d.wg.Add(1)
+			go d.loadECRImages(region)
 		}
 
 		if stringInSlice(ServiceECS, services) {
