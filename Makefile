@@ -21,7 +21,7 @@ build:
 ci:
 	test $$(gofmt -l . | wc -l) -eq 0
 	golint -set_exit_status ./...
-	./scripts/codecov.sh
+	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 clean:
 	rm build/awsinventory-*
