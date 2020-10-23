@@ -43,7 +43,8 @@ var testEBSVolumeRows = []inventory.Row{
 }
 
 // Test Data
-var testEBSDescribeVolumesOutput = &ec2.DescribeVolumesOutput{
+var testEBSDescribeVolumesOutputPage1 = &ec2.DescribeVolumesOutput{
+	NextToken: aws.String(testEBSVolumeRows[1].UniqueAssetIdentifier),
 	Volumes: []*ec2.Volume{
 		{
 			VolumeId:         aws.String(testEBSVolumeRows[0].UniqueAssetIdentifier),
@@ -67,6 +68,11 @@ var testEBSDescribeVolumesOutput = &ec2.DescribeVolumesOutput{
 			AvailabilityZone: aws.String(testEBSVolumeRows[1].Location),
 			Size:             aws.Int64(50),
 		},
+	},
+}
+
+var testEBSDescribeVolumesOutputPage2 = &ec2.DescribeVolumesOutput{
+	Volumes: []*ec2.Volume{
 		{
 			VolumeId:         aws.String(testEBSVolumeRows[2].UniqueAssetIdentifier),
 			VolumeType:       aws.String("gp2"),
@@ -86,7 +92,11 @@ func (e EBSMock) DescribeSecurityGroups(cfg *ec2.DescribeSecurityGroupsInput) (*
 }
 
 func (e EBSMock) DescribeVolumes(cfg *ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
-	return testEBSDescribeVolumesOutput, nil
+	if cfg.NextToken == nil {
+		return testEBSDescribeVolumesOutputPage1, nil
+	}
+
+	return testEBSDescribeVolumesOutputPage2, nil
 }
 
 type EBSErrorMock struct {

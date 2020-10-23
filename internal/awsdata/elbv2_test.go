@@ -48,7 +48,7 @@ var testELBV2Rows = []inventory.Row{
 }
 
 // Test Data
-var testELBV2DescribeLoadBalancersOutput = &elbv2.DescribeLoadBalancersOutput{
+var testELBV2DescribeLoadBalancersOutputPage1 = &elbv2.DescribeLoadBalancersOutput{
 	LoadBalancers: []*elbv2.LoadBalancer{
 		{
 			LoadBalancerName: aws.String(testELBV2Rows[0].UniqueAssetIdentifier),
@@ -66,6 +66,12 @@ var testELBV2DescribeLoadBalancersOutput = &elbv2.DescribeLoadBalancersOutput{
 			Scheme:           aws.String("internet-facing"),
 			VpcId:            aws.String(testELBV2Rows[1].VLANNetworkID),
 		},
+	},
+	NextMarker: aws.String(testELBV2Rows[1].UniqueAssetIdentifier),
+}
+
+var testELBV2DescribeLoadBalancersOutputPage2 = &elbv2.DescribeLoadBalancersOutput{
+	LoadBalancers: []*elbv2.LoadBalancer{
 		{
 			LoadBalancerName: aws.String(testELBV2Rows[2].UniqueAssetIdentifier),
 			LoadBalancerArn:  aws.String(testELBV2Rows[2].SerialAssetTagNumber),
@@ -83,7 +89,11 @@ type ELBV2Mock struct {
 }
 
 func (e ELBV2Mock) DescribeLoadBalancers(cfg *elbv2.DescribeLoadBalancersInput) (*elbv2.DescribeLoadBalancersOutput, error) {
-	return testELBV2DescribeLoadBalancersOutput, nil
+	if cfg.Marker == nil {
+		return testELBV2DescribeLoadBalancersOutputPage1, nil
+	}
+
+	return testELBV2DescribeLoadBalancersOutputPage2, nil
 }
 
 type ELBV2ErrorMock struct {

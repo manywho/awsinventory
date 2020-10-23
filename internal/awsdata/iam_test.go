@@ -36,7 +36,9 @@ var testIAMRows = []inventory.Row{
 }
 
 // Test Data
-var testIAMListUsersOutput = &iam.ListUsersOutput{
+var testIAMListUsersOutputPage1 = &iam.ListUsersOutput{
+	IsTruncated: aws.Bool(true),
+	Marker:      aws.String(testIAMRows[1].UniqueAssetIdentifier),
 	Users: []*iam.User{
 		{
 			UserName: aws.String(testIAMRows[0].UniqueAssetIdentifier),
@@ -46,6 +48,11 @@ var testIAMListUsersOutput = &iam.ListUsersOutput{
 			UserName: aws.String(testIAMRows[1].UniqueAssetIdentifier),
 			Arn:      aws.String(testIAMRows[1].SerialAssetTagNumber),
 		},
+	},
+}
+
+var testIAMListUsersOutputPage2 = &iam.ListUsersOutput{
+	Users: []*iam.User{
 		{
 			UserName: aws.String(testIAMRows[2].UniqueAssetIdentifier),
 			Arn:      aws.String(testIAMRows[2].SerialAssetTagNumber),
@@ -59,7 +66,11 @@ type IAMMock struct {
 }
 
 func (e IAMMock) ListUsers(cfg *iam.ListUsersInput) (*iam.ListUsersOutput, error) {
-	return testIAMListUsersOutput, nil
+	if cfg.Marker == nil {
+		return testIAMListUsersOutputPage1, nil
+	}
+
+	return testIAMListUsersOutputPage2, nil
 }
 
 type IAMErrorMock struct {

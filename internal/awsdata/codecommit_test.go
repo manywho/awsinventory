@@ -45,7 +45,8 @@ var testCodeCommitRepositoryRows = []inventory.Row{
 }
 
 // Test Data
-var testCodeCommitListRepositoriesOutput = &codecommit.ListRepositoriesOutput{
+var testCodeCommitListRepositoriesOutputPage1 = &codecommit.ListRepositoriesOutput{
+	NextToken: aws.String("204e8c06-c92d-4c11-b151-e4903ef1c9b5"),
 	Repositories: []*codecommit.RepositoryNameIdPair{
 		{
 			RepositoryName: aws.String("TestRepository1"),
@@ -53,6 +54,11 @@ var testCodeCommitListRepositoriesOutput = &codecommit.ListRepositoriesOutput{
 		{
 			RepositoryName: aws.String("TestRepository2"),
 		},
+	},
+}
+
+var testCodeCommitListRepositoriesOutputPage2 = &codecommit.ListRepositoriesOutput{
+	Repositories: []*codecommit.RepositoryNameIdPair{
 		{
 			RepositoryName: aws.String("TestRepository3"),
 		},
@@ -91,7 +97,11 @@ type CodeCommitMock struct {
 }
 
 func (e CodeCommitMock) ListRepositories(cfg *codecommit.ListRepositoriesInput) (*codecommit.ListRepositoriesOutput, error) {
-	return testCodeCommitListRepositoriesOutput, nil
+	if cfg.NextToken == nil {
+		return testCodeCommitListRepositoriesOutputPage1, nil
+	}
+
+	return testCodeCommitListRepositoriesOutputPage2, nil
 }
 
 func (e CodeCommitMock) BatchGetRepositories(cfg *codecommit.BatchGetRepositoriesInput) (*codecommit.BatchGetRepositoriesOutput, error) {

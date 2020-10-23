@@ -45,10 +45,16 @@ var testSQSQueueRows = []inventory.Row{
 }
 
 // Test Data
-var testSQSListQueuesOutput = &sqs.ListQueuesOutput{
+var testSQSListQueuesOutputPage1 = &sqs.ListQueuesOutput{
+	NextToken: aws.String(testSQSQueueRows[1].DNSNameOrURL),
 	QueueUrls: []*string{
 		aws.String(testSQSQueueRows[0].DNSNameOrURL),
 		aws.String(testSQSQueueRows[1].DNSNameOrURL),
+	},
+}
+
+var testSQSListQueuesOutputPage2 = &sqs.ListQueuesOutput{
+	QueueUrls: []*string{
 		aws.String(testSQSQueueRows[2].DNSNameOrURL),
 	},
 }
@@ -59,7 +65,11 @@ type SQSMock struct {
 }
 
 func (e SQSMock) ListQueues(cfg *sqs.ListQueuesInput) (*sqs.ListQueuesOutput, error) {
-	return testSQSListQueuesOutput, nil
+	if cfg.NextToken == nil {
+		return testSQSListQueuesOutputPage1, nil
+	}
+
+	return testSQSListQueuesOutputPage2, nil
 }
 
 func (e SQSMock) GetQueueAttributes(cfg *sqs.GetQueueAttributesInput) (*sqs.GetQueueAttributesOutput, error) {

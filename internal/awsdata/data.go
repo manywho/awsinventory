@@ -249,36 +249,61 @@ func (d *AWSData) startWorker() {
 func (d *AWSData) loadRoute53Data() {
 	r53 := d.clients.GetRoute53Client(DefaultRegion)
 	d.log.Info("loading hosted zones")
-	zones, err := r53.ListHostedZones(&route53.ListHostedZonesInput{})
-	if err != nil {
-		d.log.Fatal(err)
+	var zones []*route53.HostedZone
+	done := false
+	params := &route53.ListHostedZonesInput{}
+	for !done {
+		out, err := r53.ListHostedZones(params)
+		if err != nil {
+			d.log.Fatal(err)
+		}
+
+		zones = append(zones, out.HostedZones...)
+
+		if out.IsTruncated == aws.Bool(true) {
+			params.Marker = out.NextMarker
+		} else {
+			done = true
+		}
 	}
 
-	d.log.Infof("found %d hosted zones", len(zones.HostedZones))
+	d.log.Infof("found %d hosted zones", len(zones))
 
 	var sets []*route53.ResourceRecordSet
 
 	var lock sync.Mutex
 	var wg sync.WaitGroup
-	for _, z := range zones.HostedZones {
+	for _, z := range zones {
 		wg.Add(1)
 		go func(zone *route53.HostedZone) {
-			d.log.Infof("loading route53 records for hosted zone %s", aws.StringValue(zone.Name))
+			d.log.Infof("loading route53 records for hosted zone %s (%s)", aws.StringValue(zone.Name), aws.StringValue(zone.Id))
 
 			r53Client := d.clients.GetRoute53Client(DefaultRegion)
 
-			out, err := r53Client.ListResourceRecordSets(&route53.ListResourceRecordSetsInput{
+			done := false
+			params := &route53.ListResourceRecordSetsInput{
 				HostedZoneId: zone.Id,
-			})
-			if err != nil {
-				d.log.Fatal(err)
 			}
+			for !done {
+				out, err := r53Client.ListResourceRecordSets(params)
+				if err != nil {
+					d.log.Fatal(err)
+				}
 
-			d.log.Infof("found %d records in hosted zone %s", len(out.ResourceRecordSets), aws.StringValue(zone.Name))
+				d.log.Infof("found %d records in hosted zone %s (%s)", len(out.ResourceRecordSets), aws.StringValue(zone.Name), aws.StringValue(zone.Id))
 
-			lock.Lock()
-			sets = append(sets, out.ResourceRecordSets...)
-			lock.Unlock()
+				lock.Lock()
+				sets = append(sets, out.ResourceRecordSets...)
+				lock.Unlock()
+
+				if out.IsTruncated == aws.Bool(true) {
+					params.StartRecordIdentifier = out.NextRecordIdentifier
+					params.StartRecordName = out.NextRecordName
+					params.StartRecordType = out.NextRecordType
+				} else {
+					done = true
+				}
+			}
 			wg.Done()
 		}(z)
 	}

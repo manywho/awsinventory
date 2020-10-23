@@ -57,7 +57,7 @@ var testRDSInstanceRows = []inventory.Row{
 }
 
 // Test Data
-var testRDSDescribeDBInstancesOutput = &rds.DescribeDBInstancesOutput{
+var testRDSDescribeDBInstancesOutputPage1 = &rds.DescribeDBInstancesOutput{
 	DBInstances: []*rds.DBInstance{
 		{
 			DBInstanceIdentifier: aws.String(testRDSInstanceRows[0].UniqueAssetIdentifier),
@@ -87,6 +87,12 @@ var testRDSDescribeDBInstancesOutput = &rds.DescribeDBInstancesOutput{
 				VpcId: aws.String(testRDSInstanceRows[1].VLANNetworkID),
 			},
 		},
+	},
+	Marker: aws.String(testRDSInstanceRows[1].UniqueAssetIdentifier),
+}
+
+var testRDSDescribeDBInstancesOutputPage2 = &rds.DescribeDBInstancesOutput{
+	DBInstances: []*rds.DBInstance{
 		{
 			DBInstanceIdentifier: aws.String(testRDSInstanceRows[2].UniqueAssetIdentifier),
 			DBInstanceArn:        aws.String(testRDSInstanceRows[2].SerialAssetTagNumber),
@@ -110,7 +116,11 @@ type RDSMock struct {
 }
 
 func (e RDSMock) DescribeDBInstances(cfg *rds.DescribeDBInstancesInput) (*rds.DescribeDBInstancesOutput, error) {
-	return testRDSDescribeDBInstancesOutput, nil
+	if cfg.Marker == nil {
+		return testRDSDescribeDBInstancesOutputPage1, nil
+	}
+
+	return testRDSDescribeDBInstancesOutputPage2, nil
 }
 
 type RDSErrorMock struct {

@@ -71,9 +71,16 @@ var testECSContainerRows = []inventory.Row{
 }
 
 // Test Data
-var testECSListClustersOutput = &ecs.ListClustersOutput{
+var testECSListClustersOutputPage1 = &ecs.ListClustersOutput{
+	NextToken: aws.String("arn:aws:ecs:us-east-2:123456789101:cluster/ecs-cluster-1"),
 	ClusterArns: []*string{
 		aws.String("arn:aws:ecs:us-east-2:123456789101:cluster/ecs-cluster-1"),
+	},
+}
+
+var testECSListClustersOutputPage2 = &ecs.ListClustersOutput{
+	ClusterArns: []*string{
+		aws.String("arn:aws:ecs:us-east-2:123456789101:cluster/ecs-cluster-2"),
 	},
 }
 
@@ -86,10 +93,16 @@ var testECSDescribeClustersOutput = &ecs.DescribeClustersOutput{
 	},
 }
 
-var testECSListTasksOutput = &ecs.ListTasksOutput{
+var testECSListTasksOutputPage1 = &ecs.ListTasksOutput{
+	NextToken: aws.String("arn:aws:ecs:us-east-2:123456789101:task/ecs-cluster-1/26ab0db90d72e28ad0ba1e22ee510510"),
 	TaskArns: []*string{
 		aws.String("arn:aws:ecs:us-east-2:123456789101:task/ecs-cluster-1/b026324c6904b2a9cb4b88d6d61c81d1"),
 		aws.String("arn:aws:ecs:us-east-2:123456789101:task/ecs-cluster-1/26ab0db90d72e28ad0ba1e22ee510510"),
+	},
+}
+
+var testECSListTasksOutputPage2 = &ecs.ListTasksOutput{
+	TaskArns: []*string{
 		aws.String("arn:aws:ecs:us-east-2:123456789101:task/ecs-cluster-1/6d7fce9fee471194aa8b5b6e47267f03"),
 	},
 }
@@ -232,7 +245,11 @@ type ECSMock struct {
 }
 
 func (e ECSMock) ListClusters(cfg *ecs.ListClustersInput) (*ecs.ListClustersOutput, error) {
-	return testECSListClustersOutput, nil
+	if cfg.NextToken == nil {
+		return testECSListClustersOutputPage1, nil
+	}
+
+	return testECSListClustersOutputPage2, nil
 }
 
 func (e ECSMock) DescribeClusters(cfg *ecs.DescribeClustersInput) (*ecs.DescribeClustersOutput, error) {
@@ -240,10 +257,18 @@ func (e ECSMock) DescribeClusters(cfg *ecs.DescribeClustersInput) (*ecs.Describe
 }
 
 func (e ECSMock) ListTasks(cfg *ecs.ListTasksInput) (*ecs.ListTasksOutput, error) {
-	return testECSListTasksOutput, nil
+	if cfg.NextToken == nil {
+		return testECSListTasksOutputPage1, nil
+	}
+
+	return testECSListTasksOutputPage2, nil
 }
 
 func (e ECSMock) DescribeTasks(cfg *ecs.DescribeTasksInput) (*ecs.DescribeTasksOutput, error) {
+	if cfg.Cluster == testECSListClustersOutputPage2.ClusterArns[0] {
+		return &ecs.DescribeTasksOutput{}, nil
+	}
+
 	return testECSDescribeTasksOutput, nil
 }
 
