@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/codecommit/codecommitiface"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 	"github.com/aws/aws-sdk-go/service/elasticache/elasticacheiface"
 	"github.com/aws/aws-sdk-go/service/elasticsearchservice/elasticsearchserviceiface"
@@ -28,6 +29,7 @@ type TestClients struct {
 	CodeCommit           codecommitiface.CodeCommitAPI
 	DynamoDB             dynamodbiface.DynamoDBAPI
 	EC2                  ec2iface.EC2API
+	ECR                  ecriface.ECRAPI
 	ECS                  ecsiface.ECSAPI
 	ElastiCache          elasticacheiface.ElastiCacheAPI
 	ElasticsearchService elasticsearchserviceiface.ElasticsearchServiceAPI
@@ -56,6 +58,10 @@ func (c TestClients) GetDynamoDBClient(region string) dynamodbiface.DynamoDBAPI 
 
 func (c TestClients) GetEC2Client(region string) ec2iface.EC2API {
 	return c.EC2
+}
+
+func (c TestClients) GetECRClient(region string) ecriface.ECRAPI {
+	return c.ECR
 }
 
 func (c TestClients) GetECSClient(region string) ecsiface.ECSAPI {
