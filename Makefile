@@ -25,7 +25,7 @@ ci:
 	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 clean:
-	rm build/awsinventory-*
+	rm -rf build/*
 
 release:
 	@for target in ${TARGETS}; do
