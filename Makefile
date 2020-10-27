@@ -1,8 +1,9 @@
 .PHONY: build ci release test test-full
+.ONESHELL:
+.SHELL: /bin/sh
 
 BINARY=awsinventory
-PLATFORMS=linux darwin windows
-ARCHITECTURES=amd64 386
+TARGETS=linux:amd64 linux:386 darwin:amd64 windows:amd64 windows:386
 
 BUILD_DIR=./cmd/awsinventory
 VERSION?=0.1.0
@@ -27,9 +28,19 @@ clean:
 	rm build/awsinventory-*
 
 release:
-	$(foreach GOOS, $(PLATFORMS),\
-	$(foreach GOARCH, $(ARCHITECTURES), $(shell export GOOS=$(GOOS); export GOARCH=$(GOARCH); CGO_ENABLED=0 go build $(LDFLAGS) -o build/$(BINARY)-$(VERSION)-$(GOOS)-$(GOARCH) $(BUILD_DIR))))
-	@echo releases built in the ./build directory
+	@for target in ${TARGETS}; do
+		os=$${target%:*}
+		arch=$${target#*:}
+		if [[ "$${os}/$${arch}" == "darwin/386" ]]; then continue; fi
+		output_file="$(BINARY)-$(VERSION)-$${os}-$${arch}"
+		echo "==> building $${output_file}"
+		GOOS=$${os} GOARCH=$${arch} CGO_ENABLED=0 go build $(LDFLAGS) -o build/$${output_file} $(BUILD_DIR)
+	done
+	cd build
+	for bin in *; do
+		echo "==> generating checksum for $${bin}"
+		sha256sum $${bin} > $${bin}.sha256
+	done
 
 test:
 	go test $(FLAGS) ./...

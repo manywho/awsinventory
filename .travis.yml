@@ -17,7 +17,7 @@ after_success:
 - rm coverage.txt
 
 before_deploy:
-- VERSION=$TRAVIS_TAG make release
+- VERSION=$TRAVIS_TAG make clean release
 
 deploy:
   provider: releases
