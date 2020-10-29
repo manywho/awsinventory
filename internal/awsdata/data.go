@@ -2,7 +2,6 @@ package awsdata
 
 import (
 	"fmt"
-	"sort"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -27,15 +26,12 @@ type result struct {
 // AWSData is responsible for concurrently loading data from AWS and storing it based on the regions and services provided
 type AWSData struct {
 	clients       Clients
-	rows          []inventory.Row
-	results       chan result
-	done          chan bool
+	rows          chan inventory.Row
 	regions       []string
 	validRegions  []string
 	validServices []string
 	route53Cache  *route53cache.Cache
 	log           *logrus.Logger
-	lock          sync.Mutex
 	wg            sync.WaitGroup
 }
 
@@ -80,17 +76,14 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 		clients:       clients,
 		validRegions:  regions,
 		validServices: services,
-		rows:          make([]inventory.Row, 0),
-		results:       make(chan result),
-		done:          make(chan bool, 1),
+		rows:          make(chan inventory.Row, 100),
 		log:           logger,
-		lock:          sync.Mutex{},
 		wg:            sync.WaitGroup{},
 	}
 }
 
 // Load concurrently the required data based on the regions and services provided
-func (d *AWSData) Load(regions, services []string) {
+func (d *AWSData) Load(regions, services []string, mapper MapperFunc) {
 	if len(services) == 0 {
 		services = d.validServices
 	}
@@ -110,11 +103,13 @@ func (d *AWSData) Load(regions, services []string) {
 		return
 	}
 
+	done := make(chan bool, 1)
+	d.log.Debug("starting mapper routine")
+	go d.startWorker(mapper, done)
+
 	if stringInSlice(ServiceEC2, services) {
 		d.loadRoute53Data()
 	}
-
-	go d.startWorker()
 
 	// Global services
 	if stringInSlice(ServiceCloudFront, services) {
@@ -223,33 +218,34 @@ func (d *AWSData) Load(regions, services []string) {
 	}
 
 	d.wg.Wait()
-	close(d.results)
+	close(d.rows)
+	d.log.Info("all data loaded")
 
-	<-d.done
+	<-done
+	d.log.Info("all rows processed")
+}
+
+func (d *AWSData) startWorker(mapper MapperFunc, done chan bool) {
+	var blankRow inventory.Row
+	for {
+		row, ok := <-d.rows
+		if row == blankRow && !ok {
+			done <- true
+			return
+		}
+
+		d.log.Debugf("processing %s: %s", row.AssetType, row.UniqueAssetIdentifier)
+
+		if err := mapper(row); err != nil {
+			d.log.Errorf("mapper function failed: %s", err)
+		}
+	}
 }
 
 // PrintRegions lists all available AWS regions as used by the command line `print-regions` option
 func (d *AWSData) PrintRegions() {
 	for _, r := range d.validRegions {
 		println(r)
-	}
-}
-
-func (d *AWSData) startWorker() {
-	d.log.Info("starting worker")
-	for {
-		res, ok := <-d.results
-		var blankResult result
-		if res == blankResult && !ok {
-			d.done <- true
-			return
-		}
-		if res.Err != nil {
-			d.log.Error(res.Err)
-		} else {
-			d.log.Debugf("worker received an %s: %s", res.Row.AssetType, res.Row.UniqueAssetIdentifier)
-			d.appendRow(res.Row)
-		}
 	}
 }
 
@@ -318,21 +314,6 @@ func (d *AWSData) loadRoute53Data() {
 	wg.Wait()
 
 	d.route53Cache = route53cache.New(sets)
-}
-
-func (d *AWSData) appendRow(row inventory.Row) {
-	d.lock.Lock()
-	d.rows = append(d.rows, row)
-	d.lock.Unlock()
-}
-
-// SortRows takes all the rows in the inventory and sorts based on the UniqueAssetIdentifier (generally, the ARN)
-func (d *AWSData) SortRows() {
-	d.lock.Lock()
-	sort.SliceStable(d.rows, func(i, j int) bool {
-		return d.rows[i].UniqueAssetIdentifier < d.rows[j].UniqueAssetIdentifier
-	})
-	d.lock.Unlock()
 }
 
 func stringInSlice(needle string, haystack []string) bool {

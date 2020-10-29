@@ -36,7 +36,7 @@ func (d *AWSData) loadCodeCommitRepositories(region string) {
 		out, err := codecommitSvc.ListRepositories(params)
 
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to list repositories: %s", err)
 			return
 		}
 
@@ -63,21 +63,19 @@ func (d *AWSData) loadCodeCommitRepositories(region string) {
 		RepositoryNames: aws.StringSlice(repositories),
 	})
 	if err != nil {
-		d.results <- result{Err: err}
+		log.Errorf("failed to get repositories: %s", err)
 		return
 	}
 
 	for _, r := range out.Repositories {
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier: fmt.Sprintf("%s-%s", aws.StringValue(r.RepositoryName), aws.StringValue(r.RepositoryId)),
-				Virtual:               true,
-				DNSNameOrURL:          aws.StringValue(r.CloneUrlHttp),
-				Location:              region,
-				AssetType:             AssetTypeCodeCommitRepository,
-				SerialAssetTagNumber:  aws.StringValue(r.Arn),
-				Function:              aws.StringValue(r.RepositoryDescription),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier: fmt.Sprintf("%s-%s", aws.StringValue(r.RepositoryName), aws.StringValue(r.RepositoryId)),
+			Virtual:               true,
+			DNSNameOrURL:          aws.StringValue(r.CloneUrlHttp),
+			Location:              region,
+			AssetType:             AssetTypeCodeCommitRepository,
+			SerialAssetTagNumber:  aws.StringValue(r.Arn),
+			Function:              aws.StringValue(r.RepositoryDescription),
 		}
 	}
 

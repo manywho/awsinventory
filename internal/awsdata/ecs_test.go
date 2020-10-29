@@ -306,9 +306,6 @@ func TestCanLoadECSContainers(t *testing.T) {
 
 	d.Load([]string{DefaultRegion}, []string{ServiceECS})
 
-	// Necessary to ensure output is stable for testing
-	d.SortRows()
-
 	var count int
 	d.MapRows(func(row inventory.Row) error {
 		require.Equal(t, testECSContainerRows[count], row)

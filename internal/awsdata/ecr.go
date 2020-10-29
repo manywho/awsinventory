@@ -37,7 +37,7 @@ func (d *AWSData) loadECRImages(region string) {
 		out, err := ecrSvc.DescribeRepositories(params)
 
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to describe repositories: %s", err)
 			return
 		}
 
@@ -62,7 +62,7 @@ func (d *AWSData) loadECRImages(region string) {
 			out, err := ecrSvc.DescribeImages(params)
 
 			if err != nil {
-				d.results <- result{Err: err}
+				log.Errorf("failed to describe images: %s", err)
 				return
 			}
 
@@ -76,18 +76,16 @@ func (d *AWSData) loadECRImages(region string) {
 		}
 
 		for _, i := range images {
-			d.results <- result{
-				Row: inventory.Row{
-					UniqueAssetIdentifier: fmt.Sprintf("%s-%s", aws.StringValue(i.RepositoryName), aws.StringValue(i.ImageDigest)),
-					Virtual:               true,
-					Public:                false,
-					DNSNameOrURL:          aws.StringValue(r.RepositoryUri),
-					Location:              region,
-					AssetType:             AssetTypeECRImage,
-					Function:              strings.Join(aws.StringValueSlice(i.ImageTags), ","),
-					Comments:              humanReadableBytes(aws.Int64Value(i.ImageSizeInBytes)),
-					SerialAssetTagNumber:  aws.StringValue(i.ImageDigest),
-				},
+			d.rows <- inventory.Row{
+				UniqueAssetIdentifier: fmt.Sprintf("%s-%s", aws.StringValue(i.RepositoryName), aws.StringValue(i.ImageDigest)),
+				Virtual:               true,
+				Public:                false,
+				DNSNameOrURL:          aws.StringValue(r.RepositoryUri),
+				Location:              region,
+				AssetType:             AssetTypeECRImage,
+				Function:              strings.Join(aws.StringValueSlice(i.ImageTags), ","),
+				Comments:              humanReadableBytes(aws.Int64Value(i.ImageSizeInBytes)),
+				SerialAssetTagNumber:  aws.StringValue(i.ImageDigest),
 			}
 		}
 	}

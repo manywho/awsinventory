@@ -34,7 +34,7 @@ func (d *AWSData) loadDynamoDBTables(region string) {
 		out, err := dynamodbSvc.ListTables(params)
 
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to list tables: %s", err)
 			return
 		}
 
@@ -54,20 +54,18 @@ func (d *AWSData) loadDynamoDBTables(region string) {
 			TableName: t,
 		})
 		if err != nil {
-			d.results <- result{Err: err}
-			return
+			log.Errorf("failed to describe table %s: %s", aws.StringValue(t), err)
+			continue
 		}
 
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier:  aws.StringValue(out.Table.TableName),
-				Virtual:                true,
-				Location:               region,
-				AssetType:              AssetTypeDynamoDBTable,
-				SoftwareDatabaseVendor: "Amazon",
-				Comments:               humanReadableBytes(aws.Int64Value(out.Table.TableSizeBytes)),
-				SerialAssetTagNumber:   aws.StringValue(out.Table.TableArn),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier:  aws.StringValue(out.Table.TableName),
+			Virtual:                true,
+			Location:               region,
+			AssetType:              AssetTypeDynamoDBTable,
+			SoftwareDatabaseVendor: "Amazon",
+			Comments:               humanReadableBytes(aws.Int64Value(out.Table.TableSizeBytes)),
+			SerialAssetTagNumber:   aws.StringValue(out.Table.TableArn),
 		}
 	}
 

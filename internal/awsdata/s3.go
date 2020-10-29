@@ -37,7 +37,7 @@ func (d *AWSData) loadS3Buckets(region string) {
 
 	out, err := s3Svc.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {
-		d.results <- result{Err: err}
+		log.Errorf("Failed to list buckets: %s", err)
 		return
 	}
 
@@ -48,8 +48,8 @@ func (d *AWSData) loadS3Buckets(region string) {
 			Bucket: b.Name,
 		})
 		if err != nil {
-			d.results <- result{Err: err}
-			return
+			log.Errorf("failed to get bucket location for %s: %s", aws.StringValue(b.Name), err)
+			continue
 		}
 
 		// Only include buckets located in the region selected
@@ -57,14 +57,12 @@ func (d *AWSData) loadS3Buckets(region string) {
 			continue
 		}
 
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier: aws.StringValue(b.Name),
-				Virtual:               true,
-				Location:              region,
-				AssetType:             AssetTypeS3Bucket,
-				SerialAssetTagNumber:  fmt.Sprintf("arn:%s:s3:::%s", partition, aws.StringValue(b.Name)),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier: aws.StringValue(b.Name),
+			Virtual:               true,
+			Location:              region,
+			AssetType:             AssetTypeS3Bucket,
+			SerialAssetTagNumber:  fmt.Sprintf("arn:%s:s3:::%s", partition, aws.StringValue(b.Name)),
 		}
 	}
 

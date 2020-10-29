@@ -37,7 +37,7 @@ func (d *AWSData) loadELBV2s(region string) {
 		out, err := elbv2Svc.DescribeLoadBalancers(params)
 
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to describe load balancers: %s", err)
 			return
 		}
 
@@ -67,17 +67,15 @@ func (d *AWSData) loadELBV2s(region string) {
 			public = false
 		}
 
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier: aws.StringValue(l.LoadBalancerName),
-				Virtual:               true,
-				Public:                public,
-				DNSNameOrURL:          aws.StringValue(l.DNSName),
-				Location:              region,
-				AssetType:             assettype,
-				SerialAssetTagNumber:  aws.StringValue(l.LoadBalancerArn),
-				VLANNetworkID:         aws.StringValue(l.VpcId),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier: aws.StringValue(l.LoadBalancerName),
+			Virtual:               true,
+			Public:                public,
+			DNSNameOrURL:          aws.StringValue(l.DNSName),
+			Location:              region,
+			AssetType:             assettype,
+			SerialAssetTagNumber:  aws.StringValue(l.LoadBalancerArn),
+			VLANNetworkID:         aws.StringValue(l.VpcId),
 		}
 	}
 
