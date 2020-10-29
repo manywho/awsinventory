@@ -115,10 +115,8 @@ func (e EBSErrorMock) DescribeVolumes(cfg *ec2.DescribeVolumesInput) (*ec2.Descr
 func TestCanLoadEBSVolumes(t *testing.T) {
 	d := New(logrus.New(), TestClients{EC2: EBSMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceEBS})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceEBS}, func(row inventory.Row) error {
 		require.Equal(t, testEBSVolumeRows[count], row)
 		count++
 		return nil
@@ -131,7 +129,7 @@ func TestLoadEBSVolumesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{EC2: EBSErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceEBS})
+	d.Load([]string{DefaultRegion}, []string{ServiceEBS}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

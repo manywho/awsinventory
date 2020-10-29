@@ -124,10 +124,8 @@ func (e CodeCommitErrorMock) BatchGetRepositories(cfg *codecommit.BatchGetReposi
 func TestCanLoadCodeCommitRepositories(t *testing.T) {
 	d := New(logrus.New(), TestClients{CodeCommit: CodeCommitMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceCodeCommit})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceCodeCommit}, func(row inventory.Row) error {
 		require.Equal(t, testCodeCommitRepositoryRows[count], row)
 		count++
 		return nil
@@ -140,7 +138,7 @@ func TestLoadCodeCommitRepositoriesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{CodeCommit: CodeCommitErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceCodeCommit})
+	d.Load([]string{DefaultRegion}, []string{ServiceCodeCommit}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

@@ -145,10 +145,8 @@ func (e CloudFrontErrorMock) ListDistributions(cfg *cloudfront.ListDistributions
 func TestCanLoadCloudFrontDistributions(t *testing.T) {
 	d := New(logrus.New(), TestClients{CloudFront: CloudFrontMock{}})
 
-	d.Load([]string{}, []string{ServiceCloudFront})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{}, []string{ServiceCloudFront}, func(row inventory.Row) error {
 		require.Equal(t, testCloudFrontDistributionRows[count], row)
 		count++
 		return nil
@@ -161,7 +159,7 @@ func TestLoadCloudFrontDistributionsLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{CloudFront: CloudFrontErrorMock{}})
 
-	d.Load([]string{}, []string{ServiceCloudFront})
+	d.Load([]string{}, []string{ServiceCloudFront}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

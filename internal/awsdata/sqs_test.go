@@ -114,10 +114,8 @@ func (e SQSErrorMock) GetQueueAttributes(cfg *sqs.GetQueueAttributesInput) (*sqs
 func TestCanLoadSQSQueues(t *testing.T) {
 	d := New(logrus.New(), TestClients{SQS: SQSMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceSQS})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceSQS}, func(row inventory.Row) error {
 		require.Equal(t, testSQSQueueRows[count], row)
 		count++
 		return nil
@@ -130,7 +128,7 @@ func TestLoadSQSQueuesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{SQS: SQSErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceSQS})
+	d.Load([]string{DefaultRegion}, []string{ServiceSQS}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

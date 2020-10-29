@@ -86,10 +86,8 @@ func (e S3ErrorMock) GetBucketLocation(cfg *s3.GetBucketLocationInput) (*s3.GetB
 func TestCanLoadS3Buckets(t *testing.T) {
 	d := New(logrus.New(), TestClients{S3: S3Mock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceS3})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceS3}, func(row inventory.Row) error {
 		require.Equal(t, testS3Rows[count], row)
 		count++
 		return nil
@@ -102,7 +100,7 @@ func TestLoadS3BucketsLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{S3: S3ErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceS3})
+	d.Load([]string{DefaultRegion}, []string{ServiceS3}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

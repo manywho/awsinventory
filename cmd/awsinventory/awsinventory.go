@@ -59,10 +59,11 @@ func main() {
 
 	// Write stored rows to csv inventory
 	var count int
-	awsData.Load(regions, services, func(row inventory.Row) error {
-		count++
-		return csv.WriteRow(row)
-	})
+	awsData.Load(regions, services, nil)
+	// awsData.Load(regions, services, func(row inventory.Row) error {
+	// 	count++
+	// 	return csv.WriteRow(row)
+	// })
 
 	// Write file to disk
 	logger.Infof("writing %d rows to %s", count, outputFile)

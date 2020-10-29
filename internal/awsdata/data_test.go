@@ -1,11 +1,11 @@
 package awsdata_test
 
 import (
+	"errors"
 	"testing"
 
 	. "github.com/manywho/awsinventory/internal/awsdata"
 	logrustest "github.com/sirupsen/logrus/hooks/test"
-	"github.com/stretchr/testify/require"
 )
 
 func TestLoadExitsEarlyWhenRegionsIsEmptyAndRegionalServicesAreIncluded(t *testing.T) {
@@ -13,9 +13,9 @@ func TestLoadExitsEarlyWhenRegionsIsEmptyAndRegionalServicesAreIncluded(t *testi
 
 	d := New(logger, TestClients{})
 
-	d.Load([]string{}, []string{ServiceEC2})
+	d.Load([]string{}, []string{ServiceEC2}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, ErrNoRegions.Error())
+	assertErrorWasLogged(t, hook.Entries, ErrNoRegions)
 }
 
 func TestLoadCatchesInvalidRegion(t *testing.T) {
@@ -23,9 +23,9 @@ func TestLoadCatchesInvalidRegion(t *testing.T) {
 
 	d := New(logger, TestClients{})
 
-	d.Load([]string{"test-region"}, []string{})
+	d.Load([]string{"test-region"}, []string{}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, "invalid region: test-region")
+	assertErrorWasLogged(t, hook.Entries, errors.New("invalid region: test-region"))
 }
 
 func TestLoadCatchesInvalidService(t *testing.T) {
@@ -33,7 +33,7 @@ func TestLoadCatchesInvalidService(t *testing.T) {
 
 	d := New(logger, TestClients{})
 
-	d.Load([]string{DefaultRegion}, []string{"invalid-service"})
+	d.Load([]string{DefaultRegion}, []string{"invalid-service"}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, "invalid service: invalid-service")
+	assertErrorWasLogged(t, hook.Entries, errors.New("invalid service: invalid-service"))
 }

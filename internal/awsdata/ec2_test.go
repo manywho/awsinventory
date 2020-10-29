@@ -264,10 +264,8 @@ func (e EC2ErrorMock) DescribeImages(cfg *ec2.DescribeImagesInput) (*ec2.Describ
 func TestCanLoadEC2Instances(t *testing.T) {
 	d := New(logrus.New(), TestClients{EC2: EC2Mock{}, Route53: EC2Route53Mock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceEC2})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceEC2}, func(row inventory.Row) error {
 		count++
 		switch row.UniqueAssetIdentifier {
 		case testEC2InstanceRows[0].UniqueAssetIdentifier:
@@ -292,7 +290,7 @@ func TestLoadEC2InstancesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{EC2: EC2ErrorMock{}, Route53: EC2Route53Mock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceEC2})
+	d.Load([]string{DefaultRegion}, []string{ServiceEC2}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

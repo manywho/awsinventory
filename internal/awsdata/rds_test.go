@@ -135,10 +135,8 @@ func (e RDSErrorMock) DescribeDBInstances(cfg *rds.DescribeDBInstancesInput) (*r
 func TestCanLoadRDSInstances(t *testing.T) {
 	d := New(logrus.New(), TestClients{RDS: RDSMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceRDS})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceRDS}, func(row inventory.Row) error {
 		require.Equal(t, testRDSInstanceRows[count], row)
 		count++
 		return nil
@@ -151,7 +149,7 @@ func TestLoadRDSInstancesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{RDS: RDSErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceRDS})
+	d.Load([]string{DefaultRegion}, []string{ServiceRDS}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

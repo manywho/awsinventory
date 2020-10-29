@@ -131,10 +131,8 @@ func (e ECRErrorMock) DescribeImages(cfg *ecr.DescribeImagesInput) (*ecr.Describ
 func TestCanLoadECRImages(t *testing.T) {
 	d := New(logrus.New(), TestClients{ECR: ECRMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceECR})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceECR}, func(row inventory.Row) error {
 		require.Equal(t, testECRImageRows[count], row)
 		count++
 		return nil
@@ -147,7 +145,7 @@ func TestLoadECRImagesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{ECR: ECRErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceECR})
+	d.Load([]string{DefaultRegion}, []string{ServiceECR}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }
