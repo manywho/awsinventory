@@ -1,6 +1,7 @@
 package awsdata_test
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -18,7 +19,7 @@ import (
 
 var testEC2InstanceRows = []inventory.Row{
 	{
-		UniqueAssetIdentifier:     "i-12345678",
+		UniqueAssetIdentifier:     "i-11111111",
 		IPv4orIPv6Address:         "203.0.113.10\n10.0.1.2\n10.0.2.2",
 		Virtual:                   true,
 		Public:                    true,
@@ -30,11 +31,11 @@ var testEC2InstanceRows = []inventory.Row{
 		MACAddress:                "00:00:00:00:00:00\n11:11:11:11:11:11",
 		HardwareMakeModel:         "m4.large",
 		Function:                  "test app 1",
-		SerialAssetTagNumber:      "arn:aws:ec2:us-east-1:012345678910:instance/i-12345678",
+		SerialAssetTagNumber:      "arn:aws:ec2:us-east-1:012345678910:instance/i-11111111",
 		VLANNetworkID:             "vpc-12345678",
 	},
 	{
-		UniqueAssetIdentifier:     "i-abcdefgh",
+		UniqueAssetIdentifier:     "i-22222222",
 		IPv4orIPv6Address:         "10.0.1.3",
 		Virtual:                   true,
 		Public:                    false,
@@ -44,11 +45,11 @@ var testEC2InstanceRows = []inventory.Row{
 		AssetType:                 AssetTypeEC2Instance,
 		HardwareMakeModel:         "t2.medium",
 		Function:                  "test app 2",
-		SerialAssetTagNumber:      "arn:aws:ec2:us-east-1:012345678910:instance/i-abcdefgh",
+		SerialAssetTagNumber:      "arn:aws:ec2:us-east-1:012345678910:instance/i-22222222",
 		VLANNetworkID:             "vpc-abcdefgh",
 	},
 	{
-		UniqueAssetIdentifier:     "i-a1b2c3d4",
+		UniqueAssetIdentifier:     "i-33333333",
 		IPv4orIPv6Address:         "10.0.1.4",
 		Virtual:                   true,
 		Public:                    false,
@@ -58,7 +59,7 @@ var testEC2InstanceRows = []inventory.Row{
 		AssetType:                 AssetTypeEC2Instance,
 		HardwareMakeModel:         "t2.small",
 		Function:                  "test app 3",
-		SerialAssetTagNumber:      "arn:aws:ec2:us-east-1:012345678910:instance/i-a1b2c3d4",
+		SerialAssetTagNumber:      "arn:aws:ec2:us-east-1:012345678910:instance/i-33333333",
 		VLANNetworkID:             "vpc-a1b2c3d4",
 	},
 }
@@ -264,25 +265,22 @@ func (e EC2ErrorMock) DescribeImages(cfg *ec2.DescribeImagesInput) (*ec2.Describ
 func TestCanLoadEC2Instances(t *testing.T) {
 	d := New(logrus.New(), TestClients{EC2: EC2Mock{}, Route53: EC2Route53Mock{}})
 
-	var count int
+	var rows []inventory.Row
+
 	d.Load([]string{DefaultRegion}, []string{ServiceEC2}, func(row inventory.Row) error {
-		count++
-		switch row.UniqueAssetIdentifier {
-		case testEC2InstanceRows[0].UniqueAssetIdentifier:
-			require.Equal(t, testEC2InstanceRows[0], row)
-			break
-		case testEC2InstanceRows[1].UniqueAssetIdentifier:
-			require.Equal(t, testEC2InstanceRows[1], row)
-			break
-		case testEC2InstanceRows[2].UniqueAssetIdentifier:
-			require.Equal(t, testEC2InstanceRows[2], row)
-			break
-		default:
-			t.Error("unexpected row")
-		}
+		rows = append(rows, row)
 		return nil
 	})
-	require.Equal(t, 3, count)
+
+	require.Equal(t, 3, len(rows))
+
+	sort.SliceStable(rows, func(i, j int) bool {
+		return rows[i].UniqueAssetIdentifier < rows[j].UniqueAssetIdentifier
+	})
+
+	for i := range rows {
+		require.Equal(t, testEC2InstanceRows[i], rows[i])
+	}
 }
 
 func TestLoadEC2InstancesLogsError(t *testing.T) {
