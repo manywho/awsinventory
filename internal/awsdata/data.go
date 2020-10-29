@@ -83,7 +83,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 }
 
 // Load concurrently the required data based on the regions and services provided
-func (d *AWSData) Load(regions, services []string, mapper MapperFunc) {
+func (d *AWSData) Load(regions, services []string, mapper ProcessRow) {
 	if len(services) == 0 {
 		services = d.validServices
 	}
@@ -225,7 +225,7 @@ func (d *AWSData) Load(regions, services []string, mapper MapperFunc) {
 	d.log.Info("all rows processed")
 }
 
-func (d *AWSData) startWorker(mapper MapperFunc, done chan bool) {
+func (d *AWSData) startWorker(mapper ProcessRow, done chan bool) {
 	var blankRow inventory.Row
 	for {
 		row, ok := <-d.rows
