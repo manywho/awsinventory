@@ -76,7 +76,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 		clients:       clients,
 		validRegions:  regions,
 		validServices: services,
-		rows:          make(chan inventory.Row, 100),
+		rows:          make(chan inventory.Row, 200),
 		log:           logger,
 		wg:            sync.WaitGroup{},
 	}

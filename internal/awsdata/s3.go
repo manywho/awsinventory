@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -44,27 +45,34 @@ func (d *AWSData) loadS3Buckets(region string) {
 	log.Info("processing data")
 
 	for _, b := range out.Buckets {
-		outLocation, err := s3Svc.GetBucketLocation(&s3.GetBucketLocationInput{
-			Bucket: b.Name,
-		})
-		if err != nil {
-			log.Errorf("failed to get bucket location for %s: %s", aws.StringValue(b.Name), err)
-			continue
-		}
-
-		// Only include buckets located in the region selected
-		if s3.NormalizeBucketLocation(aws.StringValue(outLocation.LocationConstraint)) != region {
-			continue
-		}
-
-		d.rows <- inventory.Row{
-			UniqueAssetIdentifier: aws.StringValue(b.Name),
-			Virtual:               true,
-			Location:              region,
-			AssetType:             AssetTypeS3Bucket,
-			SerialAssetTagNumber:  fmt.Sprintf("arn:%s:s3:::%s", partition, aws.StringValue(b.Name)),
-		}
+		d.wg.Add(1)
+		go d.processS3Bucket(log, s3Svc, b, partition, region)
 	}
 
 	log.Info("finished processing data")
+}
+
+func (d *AWSData) processS3Bucket(log *logrus.Entry, s3Svc s3iface.S3API, bucket *s3.Bucket, partition string, region string) {
+	defer d.wg.Done()
+
+	outLocation, err := s3Svc.GetBucketLocation(&s3.GetBucketLocationInput{
+		Bucket: bucket.Name,
+	})
+	if err != nil {
+		log.Errorf("failed to get bucket location for %s: %s", aws.StringValue(bucket.Name), err)
+		return
+	}
+
+	// Only include buckets located in the region selected
+	if s3.NormalizeBucketLocation(aws.StringValue(outLocation.LocationConstraint)) != region {
+		return
+	}
+
+	d.rows <- inventory.Row{
+		UniqueAssetIdentifier: aws.StringValue(bucket.Name),
+		Virtual:               true,
+		Location:              region,
+		AssetType:             AssetTypeS3Bucket,
+		SerialAssetTagNumber:  fmt.Sprintf("arn:%s:s3:::%s", partition, aws.StringValue(bucket.Name)),
+	}
 }

@@ -1,6 +1,7 @@
 package awsdata_test
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -86,13 +87,21 @@ func (e S3ErrorMock) GetBucketLocation(cfg *s3.GetBucketLocationInput) (*s3.GetB
 func TestCanLoadS3Buckets(t *testing.T) {
 	d := New(logrus.New(), TestClients{S3: S3Mock{}})
 
-	var count int
+	var rows []inventory.Row
 	d.Load([]string{DefaultRegion}, []string{ServiceS3}, func(row inventory.Row) error {
-		require.Equal(t, testS3Rows[count], row)
-		count++
+		rows = append(rows, row)
 		return nil
 	})
-	require.Equal(t, 3, count)
+
+	sort.SliceStable(rows, func(i, j int) bool {
+		return rows[i].UniqueAssetIdentifier < rows[j].UniqueAssetIdentifier
+	})
+
+	require.Equal(t, 3, len(rows))
+
+	for i, row := range rows {
+		require.Equal(t, testS3Rows[i], row)
+	}
 }
 
 func TestLoadS3BucketsLogsError(t *testing.T) {
