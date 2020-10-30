@@ -103,11 +103,16 @@ func (d *AWSData) Load(regions, services []string, processRow ProcessRow) {
 		return
 	}
 
-	done := make(chan bool, 1)
-	if processRow != nil {
-		d.log.Debug("starting mapper routine")
-		go d.startWorker(processRow, done)
+	if processRow == nil {
+		processRow = func(row inventory.Row) error {
+			d.log.Debugf("throwing away %s: %s", row.AssetType, row.UniqueAssetIdentifier)
+			return nil
+		}
 	}
+
+	done := make(chan bool, 1)
+	d.log.Debug("starting row processing process")
+	go d.startWorker(processRow, done)
 
 	if stringInSlice(ServiceEC2, services) {
 		d.loadRoute53Data()
@@ -222,9 +227,6 @@ func (d *AWSData) Load(regions, services []string, processRow ProcessRow) {
 	d.wg.Wait()
 	close(d.rows)
 	d.log.Info("all data loaded")
-	if processRow == nil {
-		done <- true
-	}
 
 	<-done
 	d.log.Info("all rows processed")
