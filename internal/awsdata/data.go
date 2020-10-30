@@ -232,7 +232,7 @@ func (d *AWSData) Load(regions, services []string, processRow ProcessRow) {
 	d.log.Info("all rows processed")
 }
 
-func (d *AWSData) startWorker(mapper ProcessRow, done chan bool) {
+func (d *AWSData) startWorker(processRow ProcessRow, done chan bool) {
 	var blankRow inventory.Row
 	for {
 		row, ok := <-d.rows
@@ -243,8 +243,8 @@ func (d *AWSData) startWorker(mapper ProcessRow, done chan bool) {
 
 		d.log.Debugf("processing %s: %s", row.AssetType, row.UniqueAssetIdentifier)
 
-		if err := mapper(row); err != nil {
-			d.log.Errorf("mapper function failed: %s", err)
+		if err := processRow(row); err != nil {
+			d.log.Errorf("process row function failed: %s", err)
 		}
 	}
 }
