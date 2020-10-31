@@ -31,7 +31,7 @@ func (d *AWSData) loadElasticsearchDomains(region string) {
 
 	out, err := elasticsearchserviceSvc.ListDomainNames(&elasticsearchservice.ListDomainNamesInput{})
 	if err != nil {
-		d.results <- result{Err: err}
+		log.Errorf("failed to list domain names: %s", err)
 		return
 	}
 
@@ -58,24 +58,22 @@ func (d *AWSData) loadElasticsearchDomains(region string) {
 			DomainNames: aws.StringSlice(domains[i:j]),
 		})
 		if err != nil {
-			d.results <- result{Err: err}
-			return
+			log.Errorf("failed to describe elasticsearch domains: %s", err)
+			continue
 		}
 		for _, c := range out.DomainStatusList {
-			d.results <- result{
-				Row: inventory.Row{
-					UniqueAssetIdentifier:          aws.StringValue(c.DomainName),
-					Virtual:                        true,
-					Public:                         false,
-					DNSNameOrURL:                   aws.StringValue(c.Endpoints["vpc"]),
-					Location:                       region,
-					AssetType:                      AssetTypeElasticsearchDomain,
-					HardwareMakeModel:              aws.StringValue(c.ElasticsearchClusterConfig.InstanceType),
-					SoftwareDatabaseVendor:         "Elastic",
-					SoftwareDatabaseNameAndVersion: fmt.Sprintf("Elasticsearch %s", aws.StringValue(c.ElasticsearchVersion)),
-					SerialAssetTagNumber:           aws.StringValue(c.ARN),
-					VLANNetworkID:                  aws.StringValue(c.VPCOptions.VPCId),
-				},
+			d.rows <- inventory.Row{
+				UniqueAssetIdentifier:          aws.StringValue(c.DomainName),
+				Virtual:                        true,
+				Public:                         false,
+				DNSNameOrURL:                   aws.StringValue(c.Endpoints["vpc"]),
+				Location:                       region,
+				AssetType:                      AssetTypeElasticsearchDomain,
+				HardwareMakeModel:              aws.StringValue(c.ElasticsearchClusterConfig.InstanceType),
+				SoftwareDatabaseVendor:         "Elastic",
+				SoftwareDatabaseNameAndVersion: fmt.Sprintf("Elasticsearch %s", aws.StringValue(c.ElasticsearchVersion)),
+				SerialAssetTagNumber:           aws.StringValue(c.ARN),
+				VLANNetworkID:                  aws.StringValue(c.VPCOptions.VPCId),
 			}
 		}
 	}

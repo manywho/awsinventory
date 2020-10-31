@@ -36,7 +36,7 @@ func (d *AWSData) loadCloudFrontDistributions() {
 		out, err := cloudfrontSvc.ListDistributions(params)
 
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to list distributions: %s", err)
 			return
 		}
 
@@ -63,17 +63,15 @@ func (d *AWSData) loadCloudFrontDistributions() {
 			origins = append(origins, aws.StringValue(origin.DomainName))
 		}
 
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier:     aws.StringValue(dist.Id),
-				Virtual:                   true,
-				Public:                    true,
-				DNSNameOrURL:              strings.Join(domainNames, "\n"),
-				BaselineConfigurationName: strings.Join(origins, "\n"),
-				AssetType:                 AssetTypeCloudFrontDistribution,
-				Function:                  aws.StringValue(dist.Comment),
-				SerialAssetTagNumber:      aws.StringValue(dist.ARN),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier:     aws.StringValue(dist.Id),
+			Virtual:                   true,
+			Public:                    true,
+			DNSNameOrURL:              strings.Join(domainNames, "\n"),
+			BaselineConfigurationName: strings.Join(origins, "\n"),
+			AssetType:                 AssetTypeCloudFrontDistribution,
+			Function:                  aws.StringValue(dist.Comment),
+			SerialAssetTagNumber:      aws.StringValue(dist.ARN),
 		}
 	}
 

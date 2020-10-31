@@ -108,10 +108,8 @@ func (e ELBV2ErrorMock) DescribeLoadBalancers(cfg *elbv2.DescribeLoadBalancersIn
 func TestCanLoadELBV2s(t *testing.T) {
 	d := New(logrus.New(), TestClients{ELBV2: ELBV2Mock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceELBV2})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceELBV2}, func(row inventory.Row) error {
 		require.Equal(t, testELBV2Rows[count], row)
 		count++
 		return nil
@@ -124,7 +122,7 @@ func TestLoadELBV2sLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{ELBV2: ELBV2ErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceELBV2})
+	d.Load([]string{DefaultRegion}, []string{ServiceELBV2}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

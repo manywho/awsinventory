@@ -111,10 +111,8 @@ func (e DynamoDBErrorMock) DescribeTable(cfg *dynamodb.DescribeTableInput) (*dyn
 func TestCanLoadDynamoDBTables(t *testing.T) {
 	d := New(logrus.New(), TestClients{DynamoDB: DynamoDBMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceDynamoDB})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceDynamoDB}, func(row inventory.Row) error {
 		require.Equal(t, testDynamoDBTableRows[count], row)
 		count++
 		return nil
@@ -127,7 +125,7 @@ func TestLoadDynamoDBTablesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{DynamoDB: DynamoDBErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceDynamoDB})
+	d.Load([]string{DefaultRegion}, []string{ServiceDynamoDB}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

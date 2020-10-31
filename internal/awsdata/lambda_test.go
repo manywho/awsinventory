@@ -129,10 +129,8 @@ func (e LambdaErrorMock) ListFunctions(cfg *lambda.ListFunctionsInput) (*lambda.
 func TestCanLoadLambdaFunctions(t *testing.T) {
 	d := New(logrus.New(), TestClients{Lambda: LambdaMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceLambda})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceLambda}, func(row inventory.Row) error {
 		require.Equal(t, testLambdaFunctionRows[count], row)
 		count++
 		return nil
@@ -145,7 +143,7 @@ func TestLoadLambdaFunctionsLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{Lambda: LambdaErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceLambda})
+	d.Load([]string{DefaultRegion}, []string{ServiceLambda}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

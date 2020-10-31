@@ -37,7 +37,7 @@ func (d *AWSData) loadSQSQueues(region string) {
 		out, err := sqsSvc.ListQueues(params)
 
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to list queues: %s", err)
 			return
 		}
 
@@ -62,20 +62,18 @@ func (d *AWSData) loadSQSQueues(region string) {
 			},
 		})
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to get queue attributes for %s: %s", aws.StringValue(q), err)
 			return
 		}
 
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier: (*q)[strings.LastIndex(aws.StringValue(q), "/")+1:],
-				Virtual:               true,
-				DNSNameOrURL:          aws.StringValue(q),
-				Location:              region,
-				AssetType:             AssetTypeSQSQueue,
-				Comments:              fmt.Sprintf("%s, %s", aws.StringValue(out.Attributes[sqs.QueueAttributeNameApproximateNumberOfMessages]), aws.StringValue(out.Attributes[sqs.QueueAttributeNameApproximateNumberOfMessagesNotVisible])),
-				SerialAssetTagNumber:  aws.StringValue(out.Attributes[sqs.QueueAttributeNameQueueArn]),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier: (*q)[strings.LastIndex(aws.StringValue(q), "/")+1:],
+			Virtual:               true,
+			DNSNameOrURL:          aws.StringValue(q),
+			Location:              region,
+			AssetType:             AssetTypeSQSQueue,
+			Comments:              fmt.Sprintf("%s, %s", aws.StringValue(out.Attributes[sqs.QueueAttributeNameApproximateNumberOfMessages]), aws.StringValue(out.Attributes[sqs.QueueAttributeNameApproximateNumberOfMessagesNotVisible])),
+			SerialAssetTagNumber:  aws.StringValue(out.Attributes[sqs.QueueAttributeNameQueueArn]),
 		}
 	}
 

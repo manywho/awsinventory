@@ -39,7 +39,7 @@ func (d *AWSData) loadECSContainers(region string) {
 	for !done {
 		out, err := ecsSvc.ListClusters(params)
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to list clusters: %s", err)
 			return
 		}
 
@@ -62,7 +62,7 @@ func (d *AWSData) loadECSContainers(region string) {
 		Clusters: clusterArns,
 	})
 	if err != nil {
-		d.results <- result{Err: err}
+		log.Errorf("failed to describe clusters: %s", err)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (d *AWSData) loadECSContainers(region string) {
 		for !done {
 			outListTasks, err := ecsSvc.ListTasks(params)
 			if err != nil {
-				d.results <- result{Err: err}
+				log.Errorf("failed to list tasks: %s", err)
 				return
 			}
 
@@ -102,13 +102,13 @@ func (d *AWSData) loadECSContainers(region string) {
 			Tasks:   taskArns,
 		})
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to describe tasks: %s", err)
 			return
 		}
 		for _, task := range outDescribeTasks.Tasks {
 			for _, container := range task.Containers {
 				d.wg.Add(1)
-				go d.processECSContainer(container, task, cluster, ec2Svc, region)
+				go d.processECSContainer(log, container, task, cluster, ec2Svc, region)
 			}
 		}
 	}
@@ -116,7 +116,7 @@ func (d *AWSData) loadECSContainers(region string) {
 	log.Info("finished processing data")
 }
 
-func (d *AWSData) processECSContainer(container *ecs.Container, task *ecs.Task, cluster *ecs.Cluster, ec2Svc ec2iface.EC2API, region string) {
+func (d *AWSData) processECSContainer(log *logrus.Entry, container *ecs.Container, task *ecs.Task, cluster *ecs.Cluster, ec2Svc ec2iface.EC2API, region string) {
 	defer d.wg.Done()
 
 	var ips []string
@@ -156,24 +156,22 @@ func (d *AWSData) processECSContainer(container *ecs.Container, task *ecs.Task, 
 		NetworkInterfaceIds: aws.StringSlice(networkInterfaces),
 	})
 	if err != nil {
-		d.results <- result{Err: err}
+		log.Errorf("failed to describe network interfaces for %s: %s", aws.StringValue(container.Name), err)
 	} else if len(out.NetworkInterfaces) > 0 {
 		vpcID = aws.StringValue(out.NetworkInterfaces[0].VpcId)
 	}
 
-	d.results <- result{
-		Row: inventory.Row{
-			UniqueAssetIdentifier:     fmt.Sprintf("%s-%s", aws.StringValue(container.Name), aws.StringValue(container.RuntimeId)),
-			IPv4orIPv6Address:         strings.Join(ips, "\n"),
-			Virtual:                   true,
-			MACAddress:                strings.Join(macAddresses, "\n"),
-			BaselineConfigurationName: aws.StringValue(container.Image),
-			Location:                  region,
-			AssetType:                 AssetTypeECSContainer,
-			HardwareMakeModel:         hardware,
-			Function:                  fmt.Sprintf("%s %s", aws.StringValue(cluster.ClusterName), aws.StringValue(task.Group)),
-			SerialAssetTagNumber:      aws.StringValue(container.ContainerArn),
-			VLANNetworkID:             vpcID,
-		},
+	d.rows <- inventory.Row{
+		UniqueAssetIdentifier:     fmt.Sprintf("%s-%s", aws.StringValue(container.Name), aws.StringValue(container.RuntimeId)),
+		IPv4orIPv6Address:         strings.Join(ips, "\n"),
+		Virtual:                   true,
+		MACAddress:                strings.Join(macAddresses, "\n"),
+		BaselineConfigurationName: aws.StringValue(container.Image),
+		Location:                  region,
+		AssetType:                 AssetTypeECSContainer,
+		HardwareMakeModel:         hardware,
+		Function:                  fmt.Sprintf("%s %s", aws.StringValue(cluster.ClusterName), aws.StringValue(task.Group)),
+		SerialAssetTagNumber:      aws.StringValue(container.ContainerArn),
+		VLANNetworkID:             vpcID,
 	}
 }

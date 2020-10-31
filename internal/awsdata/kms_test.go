@@ -138,10 +138,8 @@ func (e KMSErrorMock) DescribeKey(cfg *kms.DescribeKeyInput) (*kms.DescribeKeyOu
 func TestCanLoadKMSKeys(t *testing.T) {
 	d := New(logrus.New(), TestClients{KMS: KMSMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceKMS})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceKMS}, func(row inventory.Row) error {
 		require.Equal(t, testKMSKeyRows[count], row)
 		count++
 		return nil
@@ -154,7 +152,7 @@ func TestLoadKMSKeysLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{KMS: KMSErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceKMS})
+	d.Load([]string{DefaultRegion}, []string{ServiceKMS}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

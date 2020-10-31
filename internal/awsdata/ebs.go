@@ -40,7 +40,7 @@ func (d *AWSData) loadEBSVolumes(region string) {
 		MaxResults: aws.Int64(5),
 	})
 	if err != nil {
-		d.results <- result{Err: err}
+		log.Errorf("failed to load account if from security groups: %s", err)
 		return
 	} else if len(out.SecurityGroups) > 0 {
 		accountID = aws.StringValue(out.SecurityGroups[0].OwnerId)
@@ -52,7 +52,7 @@ func (d *AWSData) loadEBSVolumes(region string) {
 	for !done {
 		out, err := ec2Svc.DescribeVolumes(params)
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to describe volumes: %s", err)
 			return
 		}
 
@@ -75,16 +75,14 @@ func (d *AWSData) loadEBSVolumes(region string) {
 			}
 		}
 
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier: aws.StringValue(v.VolumeId),
-				Virtual:               true,
-				Location:              region,
-				AssetType:             AssetTypeEBSVolume,
-				HardwareMakeModel:     fmt.Sprintf("%s (%dGB)", aws.StringValue(v.VolumeType), aws.Int64Value(v.Size)),
-				Function:              name,
-				SerialAssetTagNumber:  fmt.Sprintf("arn:%s:ec2:%s:%s:volume/%s", partition, region, accountID, aws.StringValue(v.VolumeId)),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier: aws.StringValue(v.VolumeId),
+			Virtual:               true,
+			Location:              region,
+			AssetType:             AssetTypeEBSVolume,
+			HardwareMakeModel:     fmt.Sprintf("%s (%dGB)", aws.StringValue(v.VolumeType), aws.Int64Value(v.Size)),
+			Function:              name,
+			SerialAssetTagNumber:  fmt.Sprintf("arn:%s:ec2:%s:%s:volume/%s", partition, region, accountID, aws.StringValue(v.VolumeId)),
 		}
 	}
 

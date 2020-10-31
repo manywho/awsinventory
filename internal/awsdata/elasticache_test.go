@@ -230,10 +230,8 @@ func (e ElastiCacheErrorMock) DescribeCacheSubnetGroups(cfg *elasticache.Describ
 func TestCanLoadElastiCacheNodes(t *testing.T) {
 	d := New(logrus.New(), TestClients{ElastiCache: ElastiCacheMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceElastiCache})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceElastiCache}, func(row inventory.Row) error {
 		require.Equal(t, testElastiCacheNodeRows[count], row)
 		count++
 		return nil
@@ -246,7 +244,7 @@ func TestLoadElastiCacheNodesLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{ElastiCache: ElastiCacheErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceElastiCache})
+	d.Load([]string{DefaultRegion}, []string{ServiceElastiCache}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

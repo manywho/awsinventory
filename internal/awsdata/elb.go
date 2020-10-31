@@ -42,7 +42,7 @@ func (d *AWSData) loadELBs(region string) {
 		MaxResults: aws.Int64(5),
 	})
 	if err != nil {
-		d.results <- result{Err: err}
+		log.Errorf("failed to load account if from security groups: %s", err)
 		return
 	} else if len(out.SecurityGroups) > 0 {
 		accountID = aws.StringValue(out.SecurityGroups[0].OwnerId)
@@ -55,7 +55,7 @@ func (d *AWSData) loadELBs(region string) {
 		out, err := elbSvc.DescribeLoadBalancers(params)
 
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to describe load balancers: %s", err)
 			return
 		}
 
@@ -78,18 +78,16 @@ func (d *AWSData) loadELBs(region string) {
 			public = false
 		}
 
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier: aws.StringValue(l.LoadBalancerName),
-				Virtual:               true,
-				Public:                public,
-				DNSNameOrURL:          aws.StringValue(l.DNSName),
-				Location:              region,
-				AssetType:             AssetTypeELB,
-				Function:              aws.StringValue(l.CanonicalHostedZoneName),
-				SerialAssetTagNumber:  fmt.Sprintf("arn:%s:elasticloadbalancing:%s:%s:loadbalancer/%s", partition, region, accountID, aws.StringValue(l.LoadBalancerName)),
-				VLANNetworkID:         aws.StringValue(l.VPCId),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier: aws.StringValue(l.LoadBalancerName),
+			Virtual:               true,
+			Public:                public,
+			DNSNameOrURL:          aws.StringValue(l.DNSName),
+			Location:              region,
+			AssetType:             AssetTypeELB,
+			Function:              aws.StringValue(l.CanonicalHostedZoneName),
+			SerialAssetTagNumber:  fmt.Sprintf("arn:%s:elasticloadbalancing:%s:%s:loadbalancer/%s", partition, region, accountID, aws.StringValue(l.LoadBalancerName)),
+			VLANNetworkID:         aws.StringValue(l.VPCId),
 		}
 	}
 

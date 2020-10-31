@@ -45,8 +45,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	awsData.Load(regions, services)
-
 	f, err := os.OpenFile(outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		logger.Fatal(err)
@@ -61,7 +59,7 @@ func main() {
 
 	// Write stored rows to csv inventory
 	var count int
-	awsData.MapRows(func(row inventory.Row) error {
+	awsData.Load(regions, services, func(row inventory.Row) error {
 		count++
 		return csv.WriteRow(row)
 	})

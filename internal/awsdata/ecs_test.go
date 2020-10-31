@@ -1,6 +1,7 @@
 package awsdata_test
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -302,20 +303,24 @@ func (e EC2ErrorMock) DescribeNetworkInterfaces(cfg *ec2.DescribeNetworkInterfac
 
 // Tests
 func TestCanLoadECSContainers(t *testing.T) {
+	// t.Skip()
 	d := New(logrus.New(), TestClients{EC2: EC2Mock{}, ECS: ECSMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceECS})
-
-	// Necessary to ensure output is stable for testing
-	d.SortRows()
-
-	var count int
-	d.MapRows(func(row inventory.Row) error {
-		require.Equal(t, testECSContainerRows[count], row)
-		count++
+	var rows []inventory.Row
+	d.Load([]string{DefaultRegion}, []string{ServiceECS}, func(row inventory.Row) error {
+		rows = append(rows, row)
 		return nil
 	})
-	require.Equal(t, 4, count)
+
+	require.Equal(t, 4, len(rows))
+
+	sort.SliceStable(rows, func(i, j int) bool {
+		return rows[i].UniqueAssetIdentifier < rows[j].UniqueAssetIdentifier
+	})
+
+	for i := range rows {
+		require.Equal(t, testECSContainerRows[i], rows[i])
+	}
 }
 
 func TestLoadECSContainersLogsError(t *testing.T) {
@@ -323,7 +328,7 @@ func TestLoadECSContainersLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{EC2: EC2ErrorMock{}, ECS: ECSErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceECS})
+	d.Load([]string{DefaultRegion}, []string{ServiceECS}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

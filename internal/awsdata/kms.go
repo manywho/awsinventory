@@ -38,7 +38,7 @@ func (d *AWSData) loadKMSKeys(region string) {
 		out, err := kmsSvc.ListKeys(params)
 
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to list keys: %s", err)
 			return
 		}
 
@@ -58,7 +58,7 @@ func (d *AWSData) loadKMSKeys(region string) {
 			KeyId: k.KeyId,
 		})
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to describe key %s: %s", aws.StringValue(k.KeyId), err)
 			return
 		}
 
@@ -69,18 +69,16 @@ func (d *AWSData) loadKMSKeys(region string) {
 			comments = append(comments, "Valid to: "+aws.TimeValue(out.KeyMetadata.ValidTo).Format(time.RFC3339))
 		}
 
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier:     aws.StringValue(out.KeyMetadata.KeyId),
-				Virtual:                   true,
-				Public:                    false,
-				BaselineConfigurationName: aws.StringValue(out.KeyMetadata.Origin),
-				Location:                  region,
-				AssetType:                 AssetTypeKMSKey,
-				Comments:                  strings.Join(comments, "\n"),
-				SerialAssetTagNumber:      aws.StringValue(out.KeyMetadata.Arn),
-				Function:                  aws.StringValue(out.KeyMetadata.Description),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier:     aws.StringValue(out.KeyMetadata.KeyId),
+			Virtual:                   true,
+			Public:                    false,
+			BaselineConfigurationName: aws.StringValue(out.KeyMetadata.Origin),
+			Location:                  region,
+			AssetType:                 AssetTypeKMSKey,
+			Comments:                  strings.Join(comments, "\n"),
+			SerialAssetTagNumber:      aws.StringValue(out.KeyMetadata.Arn),
+			Function:                  aws.StringValue(out.KeyMetadata.Description),
 		}
 	}
 

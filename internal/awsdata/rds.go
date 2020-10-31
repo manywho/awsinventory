@@ -36,7 +36,7 @@ func (d *AWSData) loadRDSInstances(region string) {
 		out, err := rdsSvc.DescribeDBInstances(params)
 
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to describe db instances: %s", err)
 			return
 		}
 
@@ -52,20 +52,18 @@ func (d *AWSData) loadRDSInstances(region string) {
 	log.Info("processing data")
 
 	for _, i := range dbInstances {
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier:          aws.StringValue(i.DBInstanceIdentifier),
-				Virtual:                        true,
-				Public:                         aws.BoolValue(i.PubliclyAccessible),
-				DNSNameOrURL:                   aws.StringValue(i.Endpoint.Address),
-				Location:                       region,
-				AssetType:                      AssetTypeRDSInstance,
-				HardwareMakeModel:              aws.StringValue(i.DBInstanceClass),
-				SoftwareDatabaseVendor:         aws.StringValue(i.Engine),
-				SoftwareDatabaseNameAndVersion: fmt.Sprintf("%s %s", aws.StringValue(i.Engine), aws.StringValue(i.EngineVersion)),
-				SerialAssetTagNumber:           aws.StringValue(i.DBInstanceArn),
-				VLANNetworkID:                  aws.StringValue(i.DBSubnetGroup.VpcId),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier:          aws.StringValue(i.DBInstanceIdentifier),
+			Virtual:                        true,
+			Public:                         aws.BoolValue(i.PubliclyAccessible),
+			DNSNameOrURL:                   aws.StringValue(i.Endpoint.Address),
+			Location:                       region,
+			AssetType:                      AssetTypeRDSInstance,
+			HardwareMakeModel:              aws.StringValue(i.DBInstanceClass),
+			SoftwareDatabaseVendor:         aws.StringValue(i.Engine),
+			SoftwareDatabaseNameAndVersion: fmt.Sprintf("%s %s", aws.StringValue(i.Engine), aws.StringValue(i.EngineVersion)),
+			SerialAssetTagNumber:           aws.StringValue(i.DBInstanceArn),
+			VLANNetworkID:                  aws.StringValue(i.DBSubnetGroup.VpcId),
 		}
 	}
 

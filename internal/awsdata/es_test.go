@@ -147,10 +147,8 @@ func (e ElasticsearchServiceErrorMock) DescribeElasticsearchDomains(cfg *elastic
 func TestCanLoadElasticsearchDomains(t *testing.T) {
 	d := New(logrus.New(), TestClients{ElasticsearchService: ElasticsearchServiceMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceElasticsearchService})
-
 	var count int
-	d.MapRows(func(row inventory.Row) error {
+	d.Load([]string{DefaultRegion}, []string{ServiceElasticsearchService}, func(row inventory.Row) error {
 		require.Equal(t, testElasticsearchDomainRows[count], row)
 		count++
 		return nil
@@ -163,7 +161,7 @@ func TestLoadElasticsearchDomainsLogsError(t *testing.T) {
 
 	d := New(logger, TestClients{ElasticsearchService: ElasticsearchServiceErrorMock{}})
 
-	d.Load([]string{DefaultRegion}, []string{ServiceElasticsearchService})
+	d.Load([]string{DefaultRegion}, []string{ServiceElasticsearchService}, nil)
 
-	require.Contains(t, hook.LastEntry().Message, testError.Error())
+	assertTestErrorWasLogged(t, hook.Entries)
 }

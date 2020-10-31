@@ -37,7 +37,7 @@ func (d *AWSData) loadElastiCacheNodes(region string) {
 	for !done {
 		out, err := elasticacheSvc.DescribeCacheClusters(params)
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to describe clusters: %s", err)
 			return
 		}
 
@@ -58,27 +58,25 @@ func (d *AWSData) loadElastiCacheNodes(region string) {
 			CacheSubnetGroupName: c.CacheSubnetGroupName,
 		})
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Warningf("failed to describe cache subnet groups for %s: %s", aws.StringValue(c.CacheClusterId), err)
 		} else if len(groups.CacheSubnetGroups) > 0 {
 			vpcID = aws.StringValue(groups.CacheSubnetGroups[0].VpcId)
 		}
 
 		for _, n := range c.CacheNodes {
-			d.results <- result{
-				Row: inventory.Row{
-					UniqueAssetIdentifier:          fmt.Sprintf("%s-%s", aws.StringValue(c.CacheClusterId), aws.StringValue(n.CacheNodeId)),
-					Virtual:                        true,
-					Public:                         false,
-					DNSNameOrURL:                   aws.StringValue(n.Endpoint.Address),
-					BaselineConfigurationName:      aws.StringValue(c.CacheParameterGroup.CacheParameterGroupName),
-					Location:                       region,
-					AssetType:                      AssetTypeElastiCacheNode,
-					HardwareMakeModel:              aws.StringValue(c.CacheNodeType),
-					SoftwareDatabaseVendor:         aws.StringValue(c.Engine),
-					SoftwareDatabaseNameAndVersion: fmt.Sprintf("%s %s", aws.StringValue(c.Engine), aws.StringValue(c.EngineVersion)),
-					SerialAssetTagNumber:           aws.StringValue(c.ARN),
-					VLANNetworkID:                  vpcID,
-				},
+			d.rows <- inventory.Row{
+				UniqueAssetIdentifier:          fmt.Sprintf("%s-%s", aws.StringValue(c.CacheClusterId), aws.StringValue(n.CacheNodeId)),
+				Virtual:                        true,
+				Public:                         false,
+				DNSNameOrURL:                   aws.StringValue(n.Endpoint.Address),
+				BaselineConfigurationName:      aws.StringValue(c.CacheParameterGroup.CacheParameterGroupName),
+				Location:                       region,
+				AssetType:                      AssetTypeElastiCacheNode,
+				HardwareMakeModel:              aws.StringValue(c.CacheNodeType),
+				SoftwareDatabaseVendor:         aws.StringValue(c.Engine),
+				SoftwareDatabaseNameAndVersion: fmt.Sprintf("%s %s", aws.StringValue(c.Engine), aws.StringValue(c.EngineVersion)),
+				SerialAssetTagNumber:           aws.StringValue(c.ARN),
+				VLANNetworkID:                  vpcID,
 			}
 		}
 	}

@@ -35,7 +35,7 @@ func (d *AWSData) loadLambdaFunctions(region string) {
 	for !done {
 		out, err := lambdaSvc.ListFunctions(params)
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to list functions: %s", err)
 			return
 		}
 
@@ -56,20 +56,18 @@ func (d *AWSData) loadLambdaFunctions(region string) {
 			vpcID = aws.StringValue(f.VpcConfig.VpcId)
 		}
 
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier:          aws.StringValue(f.FunctionName),
-				Virtual:                        true,
-				BaselineConfigurationName:      aws.StringValue(f.Version),
-				OSNameAndVersion:               "Amazon Linux",
-				Location:                       region,
-				AssetType:                      AssetTypeLambdaFunction,
-				SoftwareDatabaseNameAndVersion: aws.StringValue(f.Runtime),
-				Function:                       aws.StringValue(f.Description),
-				Comments:                       fmt.Sprintf("%ds, %dMB", aws.Int64Value(f.Timeout), aws.Int64Value(f.MemorySize)),
-				SerialAssetTagNumber:           aws.StringValue(f.FunctionArn),
-				VLANNetworkID:                  vpcID,
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier:          aws.StringValue(f.FunctionName),
+			Virtual:                        true,
+			BaselineConfigurationName:      aws.StringValue(f.Version),
+			OSNameAndVersion:               "Amazon Linux",
+			Location:                       region,
+			AssetType:                      AssetTypeLambdaFunction,
+			SoftwareDatabaseNameAndVersion: aws.StringValue(f.Runtime),
+			Function:                       aws.StringValue(f.Description),
+			Comments:                       fmt.Sprintf("%ds, %dMB", aws.Int64Value(f.Timeout), aws.Int64Value(f.MemorySize)),
+			SerialAssetTagNumber:           aws.StringValue(f.FunctionArn),
+			VLANNetworkID:                  vpcID,
 		}
 	}
 

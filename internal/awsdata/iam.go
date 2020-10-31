@@ -34,7 +34,7 @@ func (d *AWSData) loadIAMUsers() {
 		out, err := iamSvc.ListUsers(params)
 
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to list users: %s", err)
 			return
 		}
 
@@ -50,13 +50,11 @@ func (d *AWSData) loadIAMUsers() {
 	log.Info("processing data")
 
 	for _, u := range users {
-		d.results <- result{
-			Row: inventory.Row{
-				UniqueAssetIdentifier: aws.StringValue(u.UserName),
-				Virtual:               true,
-				AssetType:             AssetTypeIAMUser,
-				SerialAssetTagNumber:  aws.StringValue(u.Arn),
-			},
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier: aws.StringValue(u.UserName),
+			Virtual:               true,
+			AssetType:             AssetTypeIAMUser,
+			SerialAssetTagNumber:  aws.StringValue(u.Arn),
 		}
 	}
 

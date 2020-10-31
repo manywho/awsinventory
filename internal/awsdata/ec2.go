@@ -41,7 +41,7 @@ func (d *AWSData) loadEC2Instances(region string) {
 		MaxResults: aws.Int64(5),
 	})
 	if err != nil {
-		d.results <- result{Err: err}
+		log.Errorf("failed to load account id from security groups: %s", err)
 		return
 	} else if len(out.SecurityGroups) > 0 {
 		accountID = aws.StringValue(out.SecurityGroups[0].OwnerId)
@@ -64,7 +64,7 @@ func (d *AWSData) loadEC2Instances(region string) {
 	for !done {
 		out, err := ec2Svc.DescribeInstances(params)
 		if err != nil {
-			d.results <- result{Err: err}
+			log.Errorf("failed to describe instances: %s", err)
 			return
 		}
 
@@ -82,14 +82,14 @@ func (d *AWSData) loadEC2Instances(region string) {
 	for _, r := range reservations {
 		for _, i := range r.Instances {
 			d.wg.Add(1)
-			go d.processEC2Instance(i, accountID, region, partition)
+			go d.processEC2Instance(log, i, accountID, region, partition)
 		}
 	}
 
 	log.Info("finished processing data")
 }
 
-func (d *AWSData) processEC2Instance(i *ec2.Instance, accountID string, region string, partition string) {
+func (d *AWSData) processEC2Instance(log *logrus.Entry, i *ec2.Instance, accountID string, region string, partition string) {
 	defer d.wg.Done()
 
 	var name string
@@ -117,28 +117,26 @@ func (d *AWSData) processEC2Instance(i *ec2.Instance, accountID string, region s
 		i.ImageId,
 	}})
 	if err != nil {
-		d.results <- result{Err: err}
+		log.Warningf("failed to load ami for %s: %s", aws.StringValue(i.InstanceId), err)
 	} else if len(images.Images) > 0 {
 		amiName = aws.StringValue(images.Images[0].Name)
 	}
 
-	d.results <- result{
-		Row: inventory.Row{
-			UniqueAssetIdentifier: aws.StringValue(i.InstanceId),
-			IPv4orIPv6Address:     strings.Join(ips, "\n"),
-			Virtual:               true,
-			// TODO find a better way of checking if the instance is publicly accessible
-			Public:                    aws.StringValue(i.PublicIpAddress) != "",
-			DNSNameOrURL:              strings.Join(d.route53Cache.FindRecordsForInstance(i), "\n"),
-			MACAddress:                strings.Join(macAddresses, "\n"),
-			BaselineConfigurationName: aws.StringValue(i.ImageId),
-			OSNameAndVersion:          amiName,
-			Location:                  region,
-			AssetType:                 AssetTypeEC2Instance,
-			HardwareMakeModel:         aws.StringValue(i.InstanceType),
-			Function:                  name,
-			SerialAssetTagNumber:      fmt.Sprintf("arn:%s:ec2:%s:%s:instance/%s", partition, region, accountID, aws.StringValue(i.InstanceId)),
-			VLANNetworkID:             aws.StringValue(i.VpcId),
-		},
+	d.rows <- inventory.Row{
+		UniqueAssetIdentifier: aws.StringValue(i.InstanceId),
+		IPv4orIPv6Address:     strings.Join(ips, "\n"),
+		Virtual:               true,
+		// TODO find a better way of checking if the instance is publicly accessible
+		Public:                    aws.StringValue(i.PublicIpAddress) != "",
+		DNSNameOrURL:              strings.Join(d.route53Cache.FindRecordsForInstance(i), "\n"),
+		MACAddress:                strings.Join(macAddresses, "\n"),
+		BaselineConfigurationName: aws.StringValue(i.ImageId),
+		OSNameAndVersion:          amiName,
+		Location:                  region,
+		AssetType:                 AssetTypeEC2Instance,
+		HardwareMakeModel:         aws.StringValue(i.InstanceType),
+		Function:                  name,
+		SerialAssetTagNumber:      fmt.Sprintf("arn:%s:ec2:%s:%s:instance/%s", partition, region, accountID, aws.StringValue(i.InstanceId)),
+		VLANNetworkID:             aws.StringValue(i.VpcId),
 	}
 }
