@@ -1,6 +1,7 @@
 package awsdata_test
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -111,13 +112,21 @@ func (e DynamoDBErrorMock) DescribeTable(cfg *dynamodb.DescribeTableInput) (*dyn
 func TestCanLoadDynamoDBTables(t *testing.T) {
 	d := New(logrus.New(), TestClients{DynamoDB: DynamoDBMock{}})
 
-	var count int
+	var rows []inventory.Row
 	d.Load([]string{DefaultRegion}, []string{ServiceDynamoDB}, func(row inventory.Row) error {
-		require.Equal(t, testDynamoDBTableRows[count], row)
-		count++
+		rows = append(rows, row)
 		return nil
 	})
-	require.Equal(t, 3, count)
+
+	sort.SliceStable(rows, func(i, j int) bool {
+		return rows[i].UniqueAssetIdentifier < rows[j].UniqueAssetIdentifier
+	})
+
+	require.Equal(t, 3, len(rows))
+
+	for i, row := range rows {
+		require.Equal(t, testDynamoDBTableRows[i], row)
+	}
 }
 
 func TestLoadDynamoDBTablesLogsError(t *testing.T) {

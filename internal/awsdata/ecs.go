@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -69,54 +70,61 @@ func (d *AWSData) loadECSContainers(region string) {
 	log.Info("processing data")
 
 	for _, cluster := range out.Clusters {
-		var taskArns []*string
-		done := false
-		params := &ecs.ListTasksInput{
-			Cluster: cluster.ClusterArn,
-		}
-
-		for !done {
-			outListTasks, err := ecsSvc.ListTasks(params)
-			if err != nil {
-				log.Errorf("failed to list tasks: %s", err)
-				return
-			}
-
-			taskArns = append(taskArns, outListTasks.TaskArns...)
-
-			if outListTasks.NextToken == nil {
-				done = true
-			} else {
-				params.NextToken = outListTasks.NextToken
-			}
-		}
-
-		if len(taskArns) == 0 {
-			log.Info("no data found; bailing early")
-			continue
-		}
-
-		// TODO: API call can only handle 100 task ARNs at a time
-		outDescribeTasks, err := ecsSvc.DescribeTasks(&ecs.DescribeTasksInput{
-			Cluster: cluster.ClusterArn,
-			Tasks:   taskArns,
-		})
-		if err != nil {
-			log.Errorf("failed to describe tasks: %s", err)
-			return
-		}
-		for _, task := range outDescribeTasks.Tasks {
-			for _, container := range task.Containers {
-				d.wg.Add(1)
-				go d.processECSContainer(log, container, task, cluster, ec2Svc, region)
-			}
-		}
+		d.wg.Add(1)
+		go d.processECSCluster(log, ecsSvc, ec2Svc, cluster, region)
 	}
 
 	log.Info("finished processing data")
 }
 
-func (d *AWSData) processECSContainer(log *logrus.Entry, container *ecs.Container, task *ecs.Task, cluster *ecs.Cluster, ec2Svc ec2iface.EC2API, region string) {
+func (d *AWSData) processECSCluster(log *logrus.Entry, ecsSvc ecsiface.ECSAPI, ec2Svc ec2iface.EC2API, cluster *ecs.Cluster, region string) {
+	defer d.wg.Done()
+
+	var taskArns []*string
+	done := false
+	params := &ecs.ListTasksInput{
+		Cluster: cluster.ClusterArn,
+	}
+
+	for !done {
+		outListTasks, err := ecsSvc.ListTasks(params)
+		if err != nil {
+			log.Errorf("failed to list tasks: %s", err)
+			return
+		}
+
+		taskArns = append(taskArns, outListTasks.TaskArns...)
+
+		if outListTasks.NextToken == nil {
+			done = true
+		} else {
+			params.NextToken = outListTasks.NextToken
+		}
+	}
+
+	if len(taskArns) == 0 {
+		log.Info("no data found; bailing early")
+		return
+	}
+
+	// TODO: API call can only handle 100 task ARNs at a time
+	outDescribeTasks, err := ecsSvc.DescribeTasks(&ecs.DescribeTasksInput{
+		Cluster: cluster.ClusterArn,
+		Tasks:   taskArns,
+	})
+	if err != nil {
+		log.Errorf("failed to describe tasks: %s", err)
+		return
+	}
+	for _, task := range outDescribeTasks.Tasks {
+		for _, container := range task.Containers {
+			d.wg.Add(1)
+			go d.processECSContainer(log, ec2Svc, container, task, cluster, region)
+		}
+	}
+}
+
+func (d *AWSData) processECSContainer(log *logrus.Entry, ec2Svc ec2iface.EC2API, container *ecs.Container, task *ecs.Task, cluster *ecs.Cluster, region string) {
 	defer d.wg.Done()
 
 	var ips []string

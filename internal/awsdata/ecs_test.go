@@ -303,7 +303,6 @@ func (e EC2ErrorMock) DescribeNetworkInterfaces(cfg *ec2.DescribeNetworkInterfac
 
 // Tests
 func TestCanLoadECSContainers(t *testing.T) {
-	// t.Skip()
 	d := New(logrus.New(), TestClients{EC2: EC2Mock{}, ECS: ECSMock{}})
 
 	var rows []inventory.Row
@@ -312,11 +311,11 @@ func TestCanLoadECSContainers(t *testing.T) {
 		return nil
 	})
 
-	require.Equal(t, 4, len(rows))
-
 	sort.SliceStable(rows, func(i, j int) bool {
 		return rows[i].UniqueAssetIdentifier < rows[j].UniqueAssetIdentifier
 	})
+
+	require.Equal(t, 4, len(rows))
 
 	for i := range rows {
 		require.Equal(t, testECSContainerRows[i], rows[i])

@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elasticache"
+	"github.com/aws/aws-sdk-go/service/elasticache/elasticacheiface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -53,33 +54,40 @@ func (d *AWSData) loadElastiCacheNodes(region string) {
 	log.Info("processing data")
 
 	for _, c := range cacheClusters {
-		var vpcID string
-		groups, err := elasticacheSvc.DescribeCacheSubnetGroups(&elasticache.DescribeCacheSubnetGroupsInput{
-			CacheSubnetGroupName: c.CacheSubnetGroupName,
-		})
-		if err != nil {
-			log.Warningf("failed to describe cache subnet groups for %s: %s", aws.StringValue(c.CacheClusterId), err)
-		} else if len(groups.CacheSubnetGroups) > 0 {
-			vpcID = aws.StringValue(groups.CacheSubnetGroups[0].VpcId)
-		}
-
-		for _, n := range c.CacheNodes {
-			d.rows <- inventory.Row{
-				UniqueAssetIdentifier:          fmt.Sprintf("%s-%s", aws.StringValue(c.CacheClusterId), aws.StringValue(n.CacheNodeId)),
-				Virtual:                        true,
-				Public:                         false,
-				DNSNameOrURL:                   aws.StringValue(n.Endpoint.Address),
-				BaselineConfigurationName:      aws.StringValue(c.CacheParameterGroup.CacheParameterGroupName),
-				Location:                       region,
-				AssetType:                      AssetTypeElastiCacheNode,
-				HardwareMakeModel:              aws.StringValue(c.CacheNodeType),
-				SoftwareDatabaseVendor:         aws.StringValue(c.Engine),
-				SoftwareDatabaseNameAndVersion: fmt.Sprintf("%s %s", aws.StringValue(c.Engine), aws.StringValue(c.EngineVersion)),
-				SerialAssetTagNumber:           aws.StringValue(c.ARN),
-				VLANNetworkID:                  vpcID,
-			}
-		}
+		d.wg.Add(1)
+		go d.processElastiCacheCacheCluster(log, elasticacheSvc, c, region)
 	}
 
 	log.Info("finished processing data")
+}
+
+func (d *AWSData) processElastiCacheCacheCluster(log *logrus.Entry, elasticacheSvc elasticacheiface.ElastiCacheAPI, cacheCluster *elasticache.CacheCluster, region string) {
+	defer d.wg.Done()
+
+	var vpcID string
+	groups, err := elasticacheSvc.DescribeCacheSubnetGroups(&elasticache.DescribeCacheSubnetGroupsInput{
+		CacheSubnetGroupName: cacheCluster.CacheSubnetGroupName,
+	})
+	if err != nil {
+		log.Warningf("failed to describe cache subnet groups for %s: %s", aws.StringValue(cacheCluster.CacheClusterId), err)
+	} else if len(groups.CacheSubnetGroups) > 0 {
+		vpcID = aws.StringValue(groups.CacheSubnetGroups[0].VpcId)
+	}
+
+	for _, n := range cacheCluster.CacheNodes {
+		d.rows <- inventory.Row{
+			UniqueAssetIdentifier:          fmt.Sprintf("%s-%s", aws.StringValue(cacheCluster.CacheClusterId), aws.StringValue(n.CacheNodeId)),
+			Virtual:                        true,
+			Public:                         false,
+			DNSNameOrURL:                   aws.StringValue(n.Endpoint.Address),
+			BaselineConfigurationName:      aws.StringValue(cacheCluster.CacheParameterGroup.CacheParameterGroupName),
+			Location:                       region,
+			AssetType:                      AssetTypeElastiCacheNode,
+			HardwareMakeModel:              aws.StringValue(cacheCluster.CacheNodeType),
+			SoftwareDatabaseVendor:         aws.StringValue(cacheCluster.Engine),
+			SoftwareDatabaseNameAndVersion: fmt.Sprintf("%s %s", aws.StringValue(cacheCluster.Engine), aws.StringValue(cacheCluster.EngineVersion)),
+			SerialAssetTagNumber:           aws.StringValue(cacheCluster.ARN),
+			VLANNetworkID:                  vpcID,
+		}
+	}
 }
