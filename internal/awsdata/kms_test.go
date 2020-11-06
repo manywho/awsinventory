@@ -1,6 +1,7 @@
 package awsdata_test
 
 import (
+	"sort"
 	"testing"
 	"time"
 
@@ -28,25 +29,25 @@ var testKMSKeyRows = []inventory.Row{
 		Function:                  "Test key 1",
 	},
 	{
-		UniqueAssetIdentifier:     "e602e5cb-e5c4-4ed3-aaad-980db0ec8fdd",
+		UniqueAssetIdentifier:     "b735f38f-81b2-462b-899a-a281ae69b844",
 		Virtual:                   true,
 		Public:                    false,
 		BaselineConfigurationName: "AWS_KMS",
 		Location:                  DefaultRegion,
 		AssetType:                 "KMS Key",
 		Comments:                  "CUSTOMER, SYMMETRIC_DEFAULT\nCreated at: 2020-01-02T12:00:00Z",
-		SerialAssetTagNumber:      "arn:aws:kms:us-east-1:123456789012:key/e602e5cb-e5c4-4ed3-aaad-980db0ec8fdd",
+		SerialAssetTagNumber:      "arn:aws:kms:us-east-1:123456789012:key/b735f38f-81b2-462b-899a-a281ae69b844",
 		Function:                  "Test key 2",
 	},
 	{
-		UniqueAssetIdentifier:     "b735f38f-81b2-462b-899a-a281ae69b844",
+		UniqueAssetIdentifier:     "e602e5cb-e5c4-4ed3-aaad-980db0ec8fdd",
 		Virtual:                   true,
 		Public:                    false,
 		BaselineConfigurationName: "EXTERNAL",
 		Location:                  DefaultRegion,
 		AssetType:                 "KMS Key",
 		Comments:                  "CUSTOMER, RSA_4096\nCreated at: 2020-09-01T04:00:00Z\nValid to: 2021-08-31T23:00:00Z",
-		SerialAssetTagNumber:      "arn:aws:kms:us-east-1:123456789012:key/b735f38f-81b2-462b-899a-a281ae69b844",
+		SerialAssetTagNumber:      "arn:aws:kms:us-east-1:123456789012:key/e602e5cb-e5c4-4ed3-aaad-980db0ec8fdd",
 		Function:                  "Test key 3",
 	},
 }
@@ -138,13 +139,21 @@ func (e KMSErrorMock) DescribeKey(cfg *kms.DescribeKeyInput) (*kms.DescribeKeyOu
 func TestCanLoadKMSKeys(t *testing.T) {
 	d := New(logrus.New(), TestClients{KMS: KMSMock{}})
 
-	var count int
+	var rows []inventory.Row
 	d.Load([]string{DefaultRegion}, []string{ServiceKMS}, func(row inventory.Row) error {
-		require.Equal(t, testKMSKeyRows[count], row)
-		count++
+		rows = append(rows, row)
 		return nil
 	})
-	require.Equal(t, 3, count)
+
+	sort.SliceStable(rows, func(i, j int) bool {
+		return rows[i].UniqueAssetIdentifier < rows[j].UniqueAssetIdentifier
+	})
+
+	require.Equal(t, 3, len(rows))
+
+	for i := range rows {
+		require.Equal(t, testKMSKeyRows[i], rows[i])
+	}
 }
 
 func TestLoadKMSKeysLogsError(t *testing.T) {

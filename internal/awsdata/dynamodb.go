@@ -3,6 +3,7 @@ package awsdata
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -50,24 +51,31 @@ func (d *AWSData) loadDynamoDBTables(region string) {
 	log.Info("processing data")
 
 	for _, t := range tables {
-		out, err := dynamodbSvc.DescribeTable(&dynamodb.DescribeTableInput{
-			TableName: t,
-		})
-		if err != nil {
-			log.Errorf("failed to describe table %s: %s", aws.StringValue(t), err)
-			continue
-		}
-
-		d.rows <- inventory.Row{
-			UniqueAssetIdentifier:  aws.StringValue(out.Table.TableName),
-			Virtual:                true,
-			Location:               region,
-			AssetType:              AssetTypeDynamoDBTable,
-			SoftwareDatabaseVendor: "Amazon",
-			Comments:               humanReadableBytes(aws.Int64Value(out.Table.TableSizeBytes)),
-			SerialAssetTagNumber:   aws.StringValue(out.Table.TableArn),
-		}
+		d.wg.Add(1)
+		go d.processDynamoDBTable(log, dynamodbSvc, t, region)
 	}
 
 	log.Info("finished processing data")
+}
+
+func (d *AWSData) processDynamoDBTable(log *logrus.Entry, dynamodbSvc dynamodbiface.DynamoDBAPI, table *string, region string) {
+	defer d.wg.Done()
+
+	out, err := dynamodbSvc.DescribeTable(&dynamodb.DescribeTableInput{
+		TableName: table,
+	})
+	if err != nil {
+		log.Errorf("failed to describe table %s: %s", aws.StringValue(table), err)
+		return
+	}
+
+	d.rows <- inventory.Row{
+		UniqueAssetIdentifier:  aws.StringValue(out.Table.TableName),
+		Virtual:                true,
+		Location:               region,
+		AssetType:              AssetTypeDynamoDBTable,
+		SoftwareDatabaseVendor: "Amazon",
+		Comments:               humanReadableBytes(aws.Int64Value(out.Table.TableSizeBytes)),
+		SerialAssetTagNumber:   aws.StringValue(out.Table.TableArn),
+	}
 }

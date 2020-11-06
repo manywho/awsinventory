@@ -1,6 +1,7 @@
 package awsdata_test
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -16,7 +17,7 @@ import (
 
 var testECRImageRows = []inventory.Row{
 	{
-		UniqueAssetIdentifier: "TestRepo1-sha256:7692c3ad3540bb803c020b3aee66cd8887123234ea0c6e7143c0add73ff431ed",
+		UniqueAssetIdentifier: "TestRepo1-sha256:3fc4ccfe745870e2c0d99f71f30ff0656c8dedd41cc1d7d3d376b0dbe685e2f3",
 		Virtual:               true,
 		Public:                false,
 		DNSNameOrURL:          "012345678910.dkr.ecr.us-east-1.amazonaws.com/TestRepo1",
@@ -24,10 +25,10 @@ var testECRImageRows = []inventory.Row{
 		AssetType:             AssetTypeECRImage,
 		Function:              "latest",
 		Comments:              "200.6 MB",
-		SerialAssetTagNumber:  "sha256:7692c3ad3540bb803c020b3aee66cd8887123234ea0c6e7143c0add73ff431ed",
+		SerialAssetTagNumber:  "sha256:3fc4ccfe745870e2c0d99f71f30ff0656c8dedd41cc1d7d3d376b0dbe685e2f3",
 	},
 	{
-		UniqueAssetIdentifier: "TestRepo1-sha256:3fc4ccfe745870e2c0d99f71f30ff0656c8dedd41cc1d7d3d376b0dbe685e2f3",
+		UniqueAssetIdentifier: "TestRepo1-sha256:7692c3ad3540bb803c020b3aee66cd8887123234ea0c6e7143c0add73ff431ed",
 		Virtual:               true,
 		Public:                false,
 		DNSNameOrURL:          "012345678910.dkr.ecr.us-east-1.amazonaws.com/TestRepo1",
@@ -35,7 +36,7 @@ var testECRImageRows = []inventory.Row{
 		AssetType:             AssetTypeECRImage,
 		Function:              "previous,last",
 		Comments:              "800.3 MB",
-		SerialAssetTagNumber:  "sha256:3fc4ccfe745870e2c0d99f71f30ff0656c8dedd41cc1d7d3d376b0dbe685e2f3",
+		SerialAssetTagNumber:  "sha256:7692c3ad3540bb803c020b3aee66cd8887123234ea0c6e7143c0add73ff431ed",
 	},
 	{
 		UniqueAssetIdentifier: "TestRepo1-sha256:8b5b9db0c13db24256c829aa364aa90c6d2eba318b9232a4ab9313b954d3555f",
@@ -131,13 +132,21 @@ func (e ECRErrorMock) DescribeImages(cfg *ecr.DescribeImagesInput) (*ecr.Describ
 func TestCanLoadECRImages(t *testing.T) {
 	d := New(logrus.New(), TestClients{ECR: ECRMock{}})
 
-	var count int
+	var rows []inventory.Row
 	d.Load([]string{DefaultRegion}, []string{ServiceECR}, func(row inventory.Row) error {
-		require.Equal(t, testECRImageRows[count], row)
-		count++
+		rows = append(rows, row)
 		return nil
 	})
-	require.Equal(t, 3, count)
+
+	sort.SliceStable(rows, func(i, j int) bool {
+		return rows[i].UniqueAssetIdentifier < rows[j].UniqueAssetIdentifier
+	})
+
+	require.Equal(t, 3, len(rows))
+
+	for i, row := range rows {
+		require.Equal(t, testECRImageRows[i], row)
+	}
 }
 
 func TestLoadECRImagesLogsError(t *testing.T) {

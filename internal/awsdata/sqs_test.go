@@ -1,6 +1,7 @@
 package awsdata_test
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -114,13 +115,21 @@ func (e SQSErrorMock) GetQueueAttributes(cfg *sqs.GetQueueAttributesInput) (*sqs
 func TestCanLoadSQSQueues(t *testing.T) {
 	d := New(logrus.New(), TestClients{SQS: SQSMock{}})
 
-	var count int
+	var rows []inventory.Row
 	d.Load([]string{DefaultRegion}, []string{ServiceSQS}, func(row inventory.Row) error {
-		require.Equal(t, testSQSQueueRows[count], row)
-		count++
+		rows = append(rows, row)
 		return nil
 	})
-	require.Equal(t, 3, count)
+
+	sort.SliceStable(rows, func(i, j int) bool {
+		return rows[i].UniqueAssetIdentifier < rows[j].UniqueAssetIdentifier
+	})
+
+	require.Equal(t, 3, len(rows))
+
+	for i := range rows {
+		require.Equal(t, testSQSQueueRows[i], rows[i])
+	}
 }
 
 func TestLoadSQSQueuesLogsError(t *testing.T) {

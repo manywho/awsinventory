@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -53,29 +54,36 @@ func (d *AWSData) loadSQSQueues(region string) {
 	log.Info("processing data")
 
 	for _, q := range queueUrls {
-		out, err := sqsSvc.GetQueueAttributes(&sqs.GetQueueAttributesInput{
-			QueueUrl: q,
-			AttributeNames: []*string{
-				aws.String(sqs.QueueAttributeNameApproximateNumberOfMessages),
-				aws.String(sqs.QueueAttributeNameApproximateNumberOfMessagesNotVisible),
-				aws.String(sqs.QueueAttributeNameQueueArn),
-			},
-		})
-		if err != nil {
-			log.Errorf("failed to get queue attributes for %s: %s", aws.StringValue(q), err)
-			return
-		}
-
-		d.rows <- inventory.Row{
-			UniqueAssetIdentifier: (*q)[strings.LastIndex(aws.StringValue(q), "/")+1:],
-			Virtual:               true,
-			DNSNameOrURL:          aws.StringValue(q),
-			Location:              region,
-			AssetType:             AssetTypeSQSQueue,
-			Comments:              fmt.Sprintf("%s, %s", aws.StringValue(out.Attributes[sqs.QueueAttributeNameApproximateNumberOfMessages]), aws.StringValue(out.Attributes[sqs.QueueAttributeNameApproximateNumberOfMessagesNotVisible])),
-			SerialAssetTagNumber:  aws.StringValue(out.Attributes[sqs.QueueAttributeNameQueueArn]),
-		}
+		d.wg.Add(1)
+		go d.processSQSQueue(log, sqsSvc, q, region)
 	}
 
 	log.Info("finished processing data")
+}
+
+func (d *AWSData) processSQSQueue(log *logrus.Entry, sqsSvc sqsiface.SQSAPI, queueURL *string, region string) {
+	defer d.wg.Done()
+
+	out, err := sqsSvc.GetQueueAttributes(&sqs.GetQueueAttributesInput{
+		QueueUrl: queueURL,
+		AttributeNames: []*string{
+			aws.String(sqs.QueueAttributeNameApproximateNumberOfMessages),
+			aws.String(sqs.QueueAttributeNameApproximateNumberOfMessagesNotVisible),
+			aws.String(sqs.QueueAttributeNameQueueArn),
+		},
+	})
+	if err != nil {
+		log.Errorf("failed to get queue attributes for %s: %s", aws.StringValue(queueURL), err)
+		return
+	}
+
+	d.rows <- inventory.Row{
+		UniqueAssetIdentifier: (*queueURL)[strings.LastIndex(aws.StringValue(queueURL), "/")+1:],
+		Virtual:               true,
+		DNSNameOrURL:          aws.StringValue(queueURL),
+		Location:              region,
+		AssetType:             AssetTypeSQSQueue,
+		Comments:              fmt.Sprintf("%s, %s", aws.StringValue(out.Attributes[sqs.QueueAttributeNameApproximateNumberOfMessages]), aws.StringValue(out.Attributes[sqs.QueueAttributeNameApproximateNumberOfMessagesNotVisible])),
+		SerialAssetTagNumber:  aws.StringValue(out.Attributes[sqs.QueueAttributeNameQueueArn]),
+	}
 }

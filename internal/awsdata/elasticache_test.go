@@ -1,6 +1,7 @@
 package awsdata_test
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -230,13 +231,21 @@ func (e ElastiCacheErrorMock) DescribeCacheSubnetGroups(cfg *elasticache.Describ
 func TestCanLoadElastiCacheNodes(t *testing.T) {
 	d := New(logrus.New(), TestClients{ElastiCache: ElastiCacheMock{}})
 
-	var count int
+	var rows []inventory.Row
 	d.Load([]string{DefaultRegion}, []string{ServiceElastiCache}, func(row inventory.Row) error {
-		require.Equal(t, testElastiCacheNodeRows[count], row)
-		count++
+		rows = append(rows, row)
 		return nil
 	})
-	require.Equal(t, 6, count)
+
+	sort.SliceStable(rows, func(i, j int) bool {
+		return rows[i].UniqueAssetIdentifier < rows[j].UniqueAssetIdentifier
+	})
+
+	require.Equal(t, 6, len(rows))
+
+	for i := range rows {
+		require.Equal(t, testElastiCacheNodeRows[i], rows[i])
+	}
 }
 
 func TestLoadElastiCacheNodesLogsError(t *testing.T) {
