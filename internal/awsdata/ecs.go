@@ -150,8 +150,12 @@ func (d *AWSData) processECSContainer(log *logrus.Entry, ec2Svc ec2iface.EC2API,
 	}
 
 	for _, networkInterface := range container.NetworkInterfaces {
-		ips = appendIfMissing(ips, aws.StringValue(networkInterface.PrivateIpv4Address))
-		ips = appendIfMissing(ips, aws.StringValue(networkInterface.Ipv6Address))
+		if aws.StringValue(networkInterface.PrivateIpv4Address) != "" {
+			ips = appendIfMissing(ips, aws.StringValue(networkInterface.PrivateIpv4Address))
+		}
+		if aws.StringValue(networkInterface.Ipv6Address) != "" {
+			ips = appendIfMissing(ips, aws.StringValue(networkInterface.Ipv6Address))
+		}
 	}
 
 	var hardware = aws.StringValue(task.LaunchType)

@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
@@ -82,61 +83,78 @@ func (d *AWSData) loadEC2Instances(region string) {
 	for _, r := range reservations {
 		for _, i := range r.Instances {
 			d.wg.Add(1)
-			go d.processEC2Instance(log, i, accountID, region, partition)
+			go d.processEC2Instance(log, ec2Svc, i, accountID, region, partition)
 		}
 	}
 
 	log.Info("finished processing data")
 }
 
-func (d *AWSData) processEC2Instance(log *logrus.Entry, i *ec2.Instance, accountID string, region string, partition string) {
+func (d *AWSData) processEC2Instance(log *logrus.Entry, ec2Svc ec2iface.EC2API, instance *ec2.Instance, accountID string, region string, partition string) {
 	defer d.wg.Done()
 
 	var name string
-	for _, tag := range i.Tags {
+	for _, tag := range instance.Tags {
 		if *tag.Key == "Name" {
 			name = aws.StringValue(tag.Value)
 		}
 	}
 
+	var public = false
 	var ips []string
 	var macAddresses []string
+	var dnsNames []string
 
-	if aws.StringValue(i.PublicIpAddress) != "" {
-		ips = append(ips, aws.StringValue(i.PublicIpAddress))
+	if aws.StringValue(instance.PublicIpAddress) != "" {
+		ips = append(ips, aws.StringValue(instance.PublicIpAddress))
+		public = true
 	}
 
-	for _, networkInterface := range i.NetworkInterfaces {
+	for _, networkInterface := range instance.NetworkInterfaces {
 		ips = append(ips, aws.StringValue(networkInterface.PrivateIpAddress))
+		for _, ipSet := range networkInterface.PrivateIpAddresses {
+			if aws.BoolValue(ipSet.Primary) {
+				ips = appendIfMissing(ips, aws.StringValue(ipSet.PrivateIpAddress))
+			}
+		}
 		macAddresses = append(macAddresses, aws.StringValue(networkInterface.MacAddress))
 	}
 
-	ec2Svc := d.clients.GetEC2Client(region)
+	dnsNames = append(dnsNames, d.route53Cache.FindRecordsForInstance(instance)...)
+
+	if aws.StringValue(instance.PublicDnsName) != "" {
+		dnsNames = appendIfMissing(dnsNames, aws.StringValue(instance.PublicDnsName))
+		public = true
+	}
+
+	if aws.StringValue(instance.PrivateDnsName) != "" {
+		dnsNames = appendIfMissing(dnsNames, aws.StringValue(instance.PrivateDnsName))
+	}
+
 	var amiName string
 	images, err := ec2Svc.DescribeImages(&ec2.DescribeImagesInput{ImageIds: []*string{
-		i.ImageId,
+		instance.ImageId,
 	}})
 	if err != nil {
-		log.Warningf("failed to load ami for %s: %s", aws.StringValue(i.InstanceId), err)
+		log.Warningf("failed to load ami for %s: %s", aws.StringValue(instance.InstanceId), err)
 	} else if len(images.Images) > 0 {
 		amiName = aws.StringValue(images.Images[0].Name)
 	}
 
 	d.rows <- inventory.Row{
-		UniqueAssetIdentifier: aws.StringValue(i.InstanceId),
-		IPv4orIPv6Address:     strings.Join(ips, "\n"),
-		Virtual:               true,
-		// TODO find a better way of checking if the instance is publicly accessible
-		Public:                    aws.StringValue(i.PublicIpAddress) != "",
-		DNSNameOrURL:              strings.Join(d.route53Cache.FindRecordsForInstance(i), "\n"),
+		UniqueAssetIdentifier:     aws.StringValue(instance.InstanceId),
+		IPv4orIPv6Address:         strings.Join(ips, "\n"),
+		Virtual:                   true,
+		Public:                    public,
+		DNSNameOrURL:              strings.Join(dnsNames, "\n"),
 		MACAddress:                strings.Join(macAddresses, "\n"),
-		BaselineConfigurationName: aws.StringValue(i.ImageId),
+		BaselineConfigurationName: aws.StringValue(instance.ImageId),
 		OSNameAndVersion:          amiName,
 		Location:                  region,
 		AssetType:                 AssetTypeEC2Instance,
-		HardwareMakeModel:         aws.StringValue(i.InstanceType),
+		HardwareMakeModel:         aws.StringValue(instance.InstanceType),
 		Function:                  name,
-		SerialAssetTagNumber:      fmt.Sprintf("arn:%s:ec2:%s:%s:instance/%s", partition, region, accountID, aws.StringValue(i.InstanceId)),
-		VLANNetworkID:             aws.StringValue(i.VpcId),
+		SerialAssetTagNumber:      fmt.Sprintf("arn:%s:ec2:%s:%s:instance/%s", partition, region, accountID, aws.StringValue(instance.InstanceId)),
+		VLANNetworkID:             aws.StringValue(instance.VpcId),
 	}
 }

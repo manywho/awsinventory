@@ -70,12 +70,14 @@ func (d *AWSData) processDynamoDBTable(log *logrus.Entry, dynamodbSvc dynamodbif
 	}
 
 	d.rows <- inventory.Row{
-		UniqueAssetIdentifier:  aws.StringValue(out.Table.TableName),
-		Virtual:                true,
-		Location:               region,
-		AssetType:              AssetTypeDynamoDBTable,
-		SoftwareDatabaseVendor: "Amazon",
-		Comments:               humanReadableBytes(aws.Int64Value(out.Table.TableSizeBytes)),
-		SerialAssetTagNumber:   aws.StringValue(out.Table.TableArn),
+		UniqueAssetIdentifier:          aws.StringValue(out.Table.TableName),
+		Virtual:                        true,
+		Public:                         false,
+		Location:                       region,
+		AssetType:                      AssetTypeDynamoDBTable,
+		SoftwareDatabaseVendor:         "Amazon",
+		SoftwareDatabaseNameAndVersion: "DynamoDB",
+		Comments:                       humanReadableBytes(aws.Int64Value(out.Table.TableSizeBytes)),
+		SerialAssetTagNumber:           aws.StringValue(out.Table.TableArn),
 	}
 }

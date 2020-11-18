@@ -1,6 +1,8 @@
 package awsdata
 
 import (
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/manywho/awsinventory/internal/inventory"
@@ -13,6 +15,9 @@ const (
 
 	// AssetTypeNLB is the value used in the AssetType field when fetching NLBs
 	AssetTypeNLB string = "NLB"
+
+	// AssetTypeGLB is the value used in the AssetType field when fetching GLBs
+	AssetTypeGLB string = "GLB"
 
 	// ServiceELBV2 is the key for the ELBV2 service
 	ServiceELBV2 string = "elbv2"
@@ -58,6 +63,8 @@ func (d *AWSData) loadELBV2s(region string) {
 			assettype = AssetTypeALB
 		} else if aws.StringValue(l.Type) == "network" {
 			assettype = AssetTypeNLB
+		} else if aws.StringValue(l.Type) == "gateway" {
+			assettype = AssetTypeGLB
 		}
 
 		var public bool
@@ -67,8 +74,24 @@ func (d *AWSData) loadELBV2s(region string) {
 			public = false
 		}
 
+		var ips []string
+		for _, az := range l.AvailabilityZones {
+			for _, lbAddress := range az.LoadBalancerAddresses {
+				if aws.StringValue(lbAddress.IpAddress) != "" {
+					ips = append(ips, aws.StringValue(lbAddress.IpAddress))
+				}
+				if aws.StringValue(lbAddress.IPv6Address) != "" {
+					ips = append(ips, aws.StringValue(lbAddress.IPv6Address))
+				}
+				if aws.StringValue(lbAddress.PrivateIPv4Address) != "" {
+					ips = append(ips, aws.StringValue(lbAddress.PrivateIPv4Address))
+				}
+			}
+		}
+
 		d.rows <- inventory.Row{
 			UniqueAssetIdentifier: aws.StringValue(l.LoadBalancerName),
+			IPv4orIPv6Address:     strings.Join(ips, "\n"),
 			Virtual:               true,
 			Public:                public,
 			DNSNameOrURL:          aws.StringValue(l.DNSName),
