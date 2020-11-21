@@ -63,87 +63,92 @@ type Clients interface {
 // DefaultClients holds the default methods for creating AWS service clients
 type DefaultClients struct{}
 
+// Default session options
+var sess = session.Must(session.NewSessionWithOptions(session.Options{
+	SharedConfigState: session.SharedConfigEnable,
+}))
+
 // GetCloudFrontClient returns a new CloudFront client for the given region
 func (c DefaultClients) GetCloudFrontClient(region string) cloudfrontiface.CloudFrontAPI {
-	return cloudfront.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return cloudfront.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetCodeCommitClient returns a new CodeCommit client for the given region
 func (c DefaultClients) GetCodeCommitClient(region string) codecommitiface.CodeCommitAPI {
-	return codecommit.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return codecommit.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetDynamoDBClient returns a new DynamoDB client for the given region
 func (c DefaultClients) GetDynamoDBClient(region string) dynamodbiface.DynamoDBAPI {
-	return dynamodb.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return dynamodb.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetEC2Client returns a new EC2 client for the given region
 func (c DefaultClients) GetEC2Client(region string) ec2iface.EC2API {
-	return ec2.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return ec2.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetECRClient returns a new ECS client for the given region
 func (c DefaultClients) GetECRClient(region string) ecriface.ECRAPI {
-	return ecr.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return ecr.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetECSClient returns a new ECS client for the given region
 func (c DefaultClients) GetECSClient(region string) ecsiface.ECSAPI {
-	return ecs.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return ecs.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetElastiCacheClient returns a new ElastiCache client for the given region
 func (c DefaultClients) GetElastiCacheClient(region string) elasticacheiface.ElastiCacheAPI {
-	return elasticache.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return elasticache.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetElasticsearchServiceClient returns a new ElasticsearchService client for the given region
 func (c DefaultClients) GetElasticsearchServiceClient(region string) elasticsearchserviceiface.ElasticsearchServiceAPI {
-	return elasticsearchservice.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return elasticsearchservice.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetELBClient returns a new ELB client for the given region
 func (c DefaultClients) GetELBClient(region string) elbiface.ELBAPI {
-	return elb.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return elb.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetELBV2Client returns a new ELBV2 client for the given region
 func (c DefaultClients) GetELBV2Client(region string) elbv2iface.ELBV2API {
-	return elbv2.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return elbv2.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetIAMClient returns a new IAM client for the given region
 func (c DefaultClients) GetIAMClient(region string) iamiface.IAMAPI {
-	return iam.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return iam.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetKMSClient returns a new KMS client for the given region
 func (c DefaultClients) GetKMSClient(region string) kmsiface.KMSAPI {
-	return kms.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return kms.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetLambdaClient returns a new RDS client for the given region
 func (c DefaultClients) GetLambdaClient(region string) lambdaiface.LambdaAPI {
-	return lambda.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return lambda.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetRDSClient returns a new RDS client for the given region
 func (c DefaultClients) GetRDSClient(region string) rdsiface.RDSAPI {
-	return rds.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return rds.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetRoute53Client returns a new Route53 client for the given region
 func (c DefaultClients) GetRoute53Client(region string) route53iface.Route53API {
-	return route53.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return route53.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetS3Client returns a new S3 client for the given region
 func (c DefaultClients) GetS3Client(region string) s3iface.S3API {
-	return s3.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return s3.New(sess, &aws.Config{Region: aws.String(region)})
 }
 
 // GetSQSClient returns a new SQS client for the given region
 func (c DefaultClients) GetSQSClient(region string) sqsiface.SQSAPI {
-	return sqs.New(session.Must(session.NewSession()), &aws.Config{Region: aws.String(region)})
+	return sqs.New(sess, &aws.Config{Region: aws.String(region)})
 }
