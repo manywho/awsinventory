@@ -6,21 +6,21 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![GitHub release](https://img.shields.io/github/release/manywho/awsinventory.svg)
 
-AWS Inventory is a command line tool written in Go to fetch data from AWS and use it to generate a FedRAMP compliant inventory of your assets
+AWS Inventory is a command line tool written in Go to fetch data from AWS and use it to generate a FedRAMP compliant inventory of your assets.
 
 ## FedRAMP Compliance
-AWS Inventory aims to output a CSV in accordance to the [FedRAMP inventory template](https://www.fedramp.gov/assets/resources/templates/SSP-A13-FedRAMP-Integrated-Inventory-Workbook-Template.xlsx) found [here](https://www.fedramp.gov/templates/)
+AWS Inventory aims to output a CSV in accordance to the [FedRAMP inventory template](https://www.fedramp.gov/assets/resources/templates/SSP-A13-FedRAMP-Integrated-Inventory-Workbook-Template.xlsx) found [here](https://www.fedramp.gov/templates/).
 
 ## Usage
 
-To use awsinventory, simply download the [latest release](https://github.com/manywho/awsinventory/releases/latest) for your system, make the binary executable, then call it, passing any configuration flags. It uses the AWS SDK for Go to create a session from the shared credentials file (`~/.aws/credentials`). This file is usually generated using the AWS CLI
+To use awsinventory, simply download the [latest release](https://github.com/manywho/awsinventory/releases/latest) for your system, make the binary executable, then call it, passing any configuration flags. It uses the AWS SDK for Go to create a session based on the [default credential provider chain](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials), including `~/.aws/credentials` and `~/.aws/config`.
 
 ```sh
 # Example for Linux 64-bit
 wget -O awsinventory  https://github.com/manywho/awsinventory/releases/download/$VERSION/awsinventory-$VERSION-linux-amd64
 chmod 700 awsinventory
 
-# Build an inventory of services in the EU London AWS region
+# Build an inventory of services in the Europe (London) AWS region
 ./awsinventory --regions eu-west-2
 ```
 
@@ -39,7 +39,7 @@ Usage of ./awsinventory:
 ## Development
 
 ### Building
-The provided `Makefile` has a build target to handle building the binary
+The provided `Makefile` has a build target to handle building the binary.
 
 ```sh
 # Build the binary in the current directory
@@ -47,7 +47,7 @@ make build
 ```
 
 ### Testing
-The `Makefile` has 2 targets for local testing, `test` and `test-full`
+The `Makefile` has 2 targets for local testing: `test` and `test-full`.
 
 ```sh
 # Run tests
