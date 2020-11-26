@@ -19,7 +19,7 @@ import (
 var testECSContainerRows = []inventory.Row{
 	{
 		UniqueAssetIdentifier:     "test-container-1-b026324c6904b2a9cb4b88d6d61c81d1-1234567890",
-		IPv4orIPv6Address:         "10.1.2.3\n172.16.4.5\n",
+		IPv4orIPv6Address:         "10.1.2.3\n172.16.4.5",
 		Virtual:                   true,
 		MACAddress:                "ab:cd:ef:00:11:22",
 		BaselineConfigurationName: "987654321012.dkr.ecr.us-east-2.amazonaws.com/app-1:latest",
@@ -45,7 +45,7 @@ var testECSContainerRows = []inventory.Row{
 	},
 	{
 		UniqueAssetIdentifier:     "test-container-3-26ab0db90d72e28ad0ba1e22ee510510-1234567890",
-		IPv4orIPv6Address:         "10.9.8.7\n10.100.250.25\n",
+		IPv4orIPv6Address:         "10.9.8.7\n10.100.250.25",
 		Virtual:                   true,
 		MACAddress:                "ab:00:cd:11:ef:22",
 		BaselineConfigurationName: "987654321012.dkr.ecr.us-east-2.amazonaws.com/app-3:latest",
@@ -58,7 +58,7 @@ var testECSContainerRows = []inventory.Row{
 	},
 	{
 		UniqueAssetIdentifier:     "test-container-4-6d7fce9fee471194aa8b5b6e47267f03-1234567890",
-		IPv4orIPv6Address:         "192.168.0.1\n10.200.10.1\n",
+		IPv4orIPv6Address:         "192.168.0.1\n10.200.10.1\n::ffff:0ac8:0a01",
 		Virtual:                   true,
 		MACAddress:                "fe:99:dc:88:ba:77",
 		BaselineConfigurationName: "987654321012.dkr.ecr.us-east-2.amazonaws.com/app-4:latest",
@@ -218,6 +218,7 @@ var testECSDescribeTasksOutput = &ecs.DescribeTasksOutput{
 					Image:        aws.String(testECSContainerRows[3].BaselineConfigurationName),
 					NetworkInterfaces: []*ecs.NetworkInterface{
 						{
+							Ipv6Address:        aws.String("::ffff:0ac8:0a01"),
 							PrivateIpv4Address: aws.String("10.200.10.1"),
 						},
 					},

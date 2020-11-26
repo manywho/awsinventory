@@ -38,7 +38,8 @@ var testEC2InstanceRows = []inventory.Row{
 		UniqueAssetIdentifier:     "i-22222222",
 		IPv4orIPv6Address:         "10.0.1.3",
 		Virtual:                   true,
-		Public:                    false,
+		Public:                    true,
+		DNSNameOrURL:              "ec2-54-194-252-215.us-east-1.compute.amazonaws.com\nip-192-168-1-88.us-east-1.compute.internal",
 		BaselineConfigurationName: "ami-abcdefgh",
 		OSNameAndVersion:          "ubuntu-trusty-2019-01-01",
 		Location:                  DefaultRegion,
@@ -114,7 +115,16 @@ var testEC2DescribeInstancesOutputPage1 = &ec2.DescribeInstancesOutput{
 					NetworkInterfaces: []*ec2.InstanceNetworkInterface{
 						{
 							PrivateIpAddress: aws.String("10.0.1.2"),
-							MacAddress:       aws.String("00:00:00:00:00:00"),
+							PrivateIpAddresses: []*ec2.InstancePrivateIpAddress{
+								{
+									Primary:          aws.Bool(true),
+									PrivateIpAddress: aws.String("10.0.1.2"),
+								},
+								{
+									PrivateIpAddress: aws.String("10.0.1.3"),
+								},
+							},
+							MacAddress: aws.String("00:00:00:00:00:00"),
 						},
 						{
 							PrivateIpAddress: aws.String("10.0.2.2"),
@@ -142,7 +152,9 @@ var testEC2DescribeInstancesOutputPage1 = &ec2.DescribeInstancesOutput{
 							PrivateIpAddress: aws.String(testEC2InstanceRows[1].IPv4orIPv6Address),
 						},
 					},
-					VpcId: aws.String(testEC2InstanceRows[1].VLANNetworkID),
+					PrivateDnsName: aws.String("ip-192-168-1-88.us-east-1.compute.internal"),
+					PublicDnsName:  aws.String("ec2-54-194-252-215.us-east-1.compute.amazonaws.com"),
+					VpcId:          aws.String(testEC2InstanceRows[1].VLANNetworkID),
 					Tags: []*ec2.Tag{
 						{
 							Key:   aws.String("Name"),
