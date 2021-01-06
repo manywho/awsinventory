@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 
 	"github.com/manywho/awsinventory/internal/inventory"
 	"github.com/manywho/awsinventory/pkg/route53cache"
@@ -257,13 +258,13 @@ func (d *AWSData) PrintRegions() {
 }
 
 func (d *AWSData) loadRoute53Data() {
-	r53 := d.clients.GetRoute53Client(DefaultRegion)
+	route53Svc := d.clients.GetRoute53Client(DefaultRegion)
 	d.log.Info("loading hosted zones")
 	var zones []*route53.HostedZone
 	done := false
 	params := &route53.ListHostedZonesInput{}
 	for !done {
-		out, err := r53.ListHostedZones(params)
+		out, err := route53Svc.ListHostedZones(params)
 		if err != nil {
 			d.log.Fatal(err)
 		}
@@ -285,17 +286,15 @@ func (d *AWSData) loadRoute53Data() {
 	var wg sync.WaitGroup
 	for _, z := range zones {
 		wg.Add(1)
-		go func(zone *route53.HostedZone) {
+		go func(route53Svc route53iface.Route53API, zone *route53.HostedZone) {
 			d.log.Infof("loading route53 records for hosted zone %s (%s)", aws.StringValue(zone.Name), aws.StringValue(zone.Id))
-
-			r53Client := d.clients.GetRoute53Client(DefaultRegion)
 
 			done := false
 			params := &route53.ListResourceRecordSetsInput{
 				HostedZoneId: zone.Id,
 			}
 			for !done {
-				out, err := r53Client.ListResourceRecordSets(params)
+				out, err := route53Svc.ListResourceRecordSets(params)
 				if err != nil {
 					d.log.Fatal(err)
 				}
@@ -315,7 +314,7 @@ func (d *AWSData) loadRoute53Data() {
 				}
 			}
 			wg.Done()
-		}(z)
+		}(route53Svc, z)
 	}
 
 	wg.Wait()
