@@ -71,6 +71,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 		ServiceRDS,
 		ServiceS3,
 		ServiceSQS,
+		ServiceWorkSpace,
 	}
 
 	return &AWSData{
@@ -223,6 +224,13 @@ func (d *AWSData) Load(regions, services []string, processRow ProcessRow) {
 			d.wg.Add(1)
 			go d.loadSQSQueues(region)
 		}
+
+		if stringInSlice(ServiceWorkSpace, services) {
+			d.log.Debug("including WorkSpace service")
+			d.wg.Add(1)
+			go d.loadWorkSpacesInstances(region)
+		}
+
 	}
 
 	d.wg.Wait()
