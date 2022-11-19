@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
-	"github.com/manywho/awsinventory/internal/inventory"
+	"github.com/sudoinclabs/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
 

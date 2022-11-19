@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-	"github.com/manywho/awsinventory/internal/inventory"
+	"github.com/sudoinclabs/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
 

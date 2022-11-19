@@ -3,7 +3,7 @@ package awsdata
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/manywho/awsinventory/internal/inventory"
+	"github.com/sudoinclabs/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
 

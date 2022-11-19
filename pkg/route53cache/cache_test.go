@@ -3,7 +3,7 @@ package route53cache_test
 import (
 	"testing"
 
-	. "github.com/manywho/awsinventory/pkg/route53cache"
+	. "github.com/sudoinclabs/awsinventory/pkg/route53cache"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"

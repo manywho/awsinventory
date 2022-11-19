@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	. "github.com/manywho/awsinventory/internal/awsdata"
+	. "github.com/sudoinclabs/awsinventory/internal/awsdata"
 	logrustest "github.com/sirupsen/logrus/hooks/test"
 )
 

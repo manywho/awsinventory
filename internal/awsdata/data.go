@@ -9,8 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 
-	"github.com/manywho/awsinventory/internal/inventory"
-	"github.com/manywho/awsinventory/pkg/route53cache"
+	"github.com/sudoinclabs/awsinventory/internal/inventory"
+	"github.com/sudoinclabs/awsinventory/pkg/route53cache"
 	"github.com/sirupsen/logrus"
 )
 
@@ -72,6 +72,7 @@ func New(logger *logrus.Logger, clients Clients) *AWSData {
 		ServiceS3,
 		ServiceSQS,
 		ServiceWorkSpace,
+		ServiceCloudFormation,
 	}
 
 	return &AWSData{
@@ -231,6 +232,11 @@ func (d *AWSData) Load(regions, services []string, processRow ProcessRow) {
 			go d.loadWorkSpacesInstances(region)
 		}
 
+		if stringInSlice(ServiceCloudFormation, services) {
+			d.log.Debug("including CloudFormation service")
+			d.wg.Add(1)
+			go d.loadCloudFormationsInstances(region)
+		}
 	}
 
 	d.wg.Wait()

@@ -1,4 +1,4 @@
-module github.com/manywho/awsinventory
+module github.com/sudoinclabs/awsinventory
 
 go 1.12
 

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/manywho/awsinventory/internal/awsdata"
+	"github.com/sudoinclabs/awsinventory/internal/awsdata"
 
-	"github.com/manywho/awsinventory/internal/inventory"
+	"github.com/sudoinclabs/awsinventory/internal/inventory"
 	"github.com/spf13/pflag"
 )
 

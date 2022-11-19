@@ -13,8 +13,8 @@ import (
 	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/manywho/awsinventory/internal/awsdata"
-	"github.com/manywho/awsinventory/internal/inventory"
+	. "github.com/sudoinclabs/awsinventory/internal/awsdata"
+	"github.com/sudoinclabs/awsinventory/internal/inventory"
 )
 
 var testEC2InstanceRows = []inventory.Row{

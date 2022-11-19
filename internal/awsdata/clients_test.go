@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/aws/aws-sdk-go/service/workspaces/workspacesiface"
+	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 )
 
 var testError = errors.New("test aws error")
@@ -43,6 +44,7 @@ type TestClients struct {
 	Route53              route53iface.Route53API
 	S3                   s3iface.S3API
 	SQS                  sqsiface.SQSAPI
+	WorkSpace                  workspacesiface.WorkSpacesAPI
 	WorkSpace                  workspacesiface.WorkSpacesAPI
 }
 
@@ -117,3 +119,8 @@ func (c TestClients) GetSQSClient(region string) sqsiface.SQSAPI {
 func (c TestClients) GetWorkSpaceClient(region string) workspacesiface.WorkSpacesAPI {
 	return c.WorkSpace
 }
+
+func (c TestClients) GetCloudFormationClient(region string) cloudformationiface.CloudFormationAPI {
+	return c.CloudFormation
+}
+

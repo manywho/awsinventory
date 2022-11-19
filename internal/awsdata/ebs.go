@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/manywho/awsinventory/internal/inventory"
+	"github.com/sudoinclabs/awsinventory/internal/inventory"
 	"github.com/sirupsen/logrus"
 )
 

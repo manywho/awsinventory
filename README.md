@@ -1,7 +1,7 @@
 # AWS Inventory
 
 [![Build Status](https://travis-ci.org/manywho/awsinventory.svg?branch=master)](https://travis-ci.org/manywho/awsinventory)
-[![Go Report Card](https://goreportcard.com/badge/github.com/manywho/awsinventory)](https://goreportcard.com/report/github.com/manywho/awsinventory)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sudoinclabs/awsinventory)](https://goreportcard.com/report/github.com/sudoinclabs/awsinventory)
 [![codecov](https://codecov.io/gh/manywho/awsinventory/branch/master/graph/badge.svg)](https://codecov.io/gh/manywho/awsinventory)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![GitHub release](https://img.shields.io/github/release/manywho/awsinventory.svg)
@@ -13,11 +13,11 @@ AWS Inventory aims to output a CSV in accordance to the [FedRAMP inventory templ
 
 ## Usage
 
-To use awsinventory, simply download the [latest release](https://github.com/manywho/awsinventory/releases/latest) for your system, make the binary executable, then call it, passing any configuration flags. It uses the AWS SDK for Go to create a session based on the [default credential provider chain](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials), including `~/.aws/credentials` and `~/.aws/config`.
+To use awsinventory, simply download the [latest release](https://github.com/sudoinclabs/awsinventory/releases/latest) for your system, make the binary executable, then call it, passing any configuration flags. It uses the AWS SDK for Go to create a session based on the [default credential provider chain](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials), including `~/.aws/credentials` and `~/.aws/config`.
 
 ```sh
 # Example for Linux 64-bit
-wget -O awsinventory  https://github.com/manywho/awsinventory/releases/download/$VERSION/awsinventory-$VERSION-linux-amd64
+wget -O awsinventory  https://github.com/sudoinclabs/awsinventory/releases/download/$VERSION/awsinventory-$VERSION-linux-amd64
 chmod 700 awsinventory
 
 # Build an inventory of services in the Europe (London) AWS region
